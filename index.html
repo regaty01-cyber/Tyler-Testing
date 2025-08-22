@@ -18,6 +18,8 @@
             overflow-x: hidden;
             -webkit-user-select: none;
             user-select: none;
+            min-height: 100vh;
+            -webkit-overflow-scrolling: touch;
         }
 
         .container {
@@ -25,6 +27,8 @@
             min-height: 100vh;
             padding: 10px;
             position: relative;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .header {
@@ -1213,6 +1217,7 @@
             currentHole: 1,
             courseStrokes: Array(18).fill(0),
             clubStats: {},
+            currentPutt: null,
             profile: {
                 handicap: null,
                 roundsPlayed: 0,
