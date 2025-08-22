@@ -307,18 +307,276 @@
         }
 
         /* Mobile optimization */
-        @media (max-width: 480px) {
-            .mode-selector {
-                flex-direction: column;
-                gap: 10px;
+        .immersive-environment {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+
+        .immersive-environment.show {
+            display: block;
+        }
+
+        .range-environment {
+            background: linear-gradient(to bottom, 
+                #87CEEB 0%,     /* Sky blue */
+                #B0E0E6 20%,    /* Light blue */
+                #98FB98 40%,    /* Light green */
+                #90EE90 60%,    /* Lighter green */
+                #228B22 80%,    /* Forest green */
+                #006400 100%   /* Dark green */
+            );
+        }
+
+        .course-environment {
+            background: linear-gradient(to bottom, 
+                #4169E1 0%,     /* Royal blue sky */
+                #87CEEB 30%,    /* Sky blue */
+                #228B22 70%,    /* Forest green */
+                #006400 100%   /* Dark green */
+            );
+        }
+
+        .environment-hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            z-index: 1002;
+        }
+
+        .hud-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .hud-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+
+        .hud-metric {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .hud-metric strong {
+            display: block;
+            font-size: 14px;
+            color: #90EE90;
+            margin-bottom: 2px;
+        }
+
+        .range-targets {
+            position: absolute;
+            bottom: 40%;
+            left: 0;
+            right: 0;
+            height: 20px;
+            z-index: 1001;
+        }
+
+        .range-flag {
+            position: absolute;
+            bottom: 0;
+            width: 30px;
+            height: 20px;
+            text-align: center;
+            font-size: 10px;
+            color: white;
+            font-weight: bold;
+            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tee-box-view {
+            position: absolute;
+            bottom: 10%;
+            left: 10%;
+            right: 10%;
+            height: 15%;
+            background: linear-gradient(to right, #8B4513 0%, #D2691E 50%, #8B4513 100%);
+            border-radius: 10px;
+            border: 2px solid #654321;
+            z-index: 1001;
+        }
+
+        .tee-markers {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 15px;
+        }
+
+        .tee-marker {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .tee-marker.blue { background: #0066CC; }
+        .tee-marker.white { background: #FFFFFF; }
+        .tee-marker.red { background: #CC0000; }
+
+        .course-features {
+            position: absolute;
+            bottom: 30%;
+            left: 0;
+            right: 0;
+            height: 40%;
+            z-index: 1000;
+        }
+
+        .fairway {
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 60%;
+            background: linear-gradient(to top, #228B22, #90EE90);
+            border-radius: 50px 50px 0 0;
+        }
+
+        .rough-left, .rough-right {
+            position: absolute;
+            bottom: 0;
+            width: 25%;
+            height: 40%;
+            background: linear-gradient(to top, #556B2F, #6B8E23);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .rough-left { left: 0; }
+        .rough-right { right: 0; }
+
+        .green {
+            position: absolute;
+            bottom: 0;
+            right: 15%;
+            width: 15%;
+            height: 25%;
+            background: radial-gradient(circle, #90EE90, #228B22);
+            border-radius: 50%;
+            border: 2px solid #006400;
+        }
+
+        .pin {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 2px;
+            height: 15px;
+            background: #FF0000;
+        }
+
+        .pin::after {
+            content: '🚩';
+            position: absolute;
+            top: -15px;
+            left: -8px;
+            font-size: 12px;
+        }
+
+        .water-hazard {
+            position: absolute;
+            bottom: 20%;
+            left: 40%;
+            width: 30%;
+            height: 15%;
+            background: linear-gradient(45deg, #4169E1, #1E90FF);
+            border-radius: 20px;
+            animation: water-shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes water-shimmer {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .trees {
+            position: absolute;
+            bottom: 25%;
+            left: 5%;
+            right: 5%;
+            height: 30%;
+            z-index: 998;
+        }
+
+        .tree {
+            position: absolute;
+            font-size: 20px;
+            color: #006400;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .environment-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1002;
+        }
+
+        .env-btn {
+            flex: 1;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+        }
+
+        .env-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .shot-tracer {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #FFD700;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #FFD700;
+            z-index: 1001;
+        }
+
+        @keyframes splash {
+            0% {
+                transform: scale(1);
+                opacity: 1;
             }
-            
-            .course-selector {
-                grid-template-columns: 1fr;
-            }
-            
-            .camera-controls {
-                flex-direction: column;
+            100% {
+                transform: scale(3);
+                opacity: 0;
             }
         }
     </style>
@@ -437,8 +695,8 @@
                 </div>
             </div>
 
-            <button class="camera-btn" onclick="takeRangeShot()" style="width: 100%; margin-top: 20px;">
-                📸 Take Practice Shot
+            <button class="camera-btn" onclick="enterRangeEnvironment()" style="width: 100%; margin-top: 20px;">
+                🎯 Enter Driving Range
             </button>
         </div>
 
@@ -480,8 +738,8 @@
                         </div>
                     </div>
                     
-                    <button class="camera-btn" onclick="takeCourseShot()" style="width: 100%; margin-top: 15px;">
-                        🏌️ Take Shot
+                    <button class="camera-btn" onclick="enterCourseEnvironment()" style="width: 100%; margin-top: 15px;">
+                        🏌️ Play This Hole
                     </button>
                     
                     <div style="display: flex; gap: 10px; margin-top: 15px;">
@@ -518,8 +776,138 @@
             </button>
         </div>
 
-        <!-- Putting Interface -->
-        <div id="puttingInterface" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 1000;">
+        <!-- Immersive Driving Range Environment -->
+        <div id="rangeEnvironment" class="immersive-environment range-environment">
+            <div class="environment-hud">
+                <div class="hud-top">
+                    <div>
+                        <strong>🎯 Driving Range</strong>
+                        <div style="font-size: 12px; opacity: 0.8;">Practice Facility</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 18px; font-weight: bold;" id="rangeClubDisplay">Driver</div>
+                        <div style="font-size: 12px;">Target: <span id="rangeTargetDisplay">250</span> yds</div>
+                    </div>
+                </div>
+                
+                <div class="hud-metrics">
+                    <div class="hud-metric">
+                        <strong id="rangeSpeedHUD">0</strong>
+                        <span>Ball Speed</span>
+                    </div>
+                    <div class="hud-metric">
+                        <strong id="rangeDistanceHUD">0</strong>
+                        <span>Carry</span>
+                    </div>
+                    <div class="hud-metric">
+                        <strong id="rangeAngleHUD">0°</strong>
+                        <span>Launch</span>
+                    </div>
+                    <div class="hud-metric">
+                        <strong id="rangeSpinHUD">0</strong>
+                        <span>Spin</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Range targets at different distances -->
+            <div class="range-targets">
+                <div class="range-flag" style="left: 30%;">100</div>
+                <div class="range-flag" style="left: 45%;">150</div>
+                <div class="range-flag" style="left: 60%;">200</div>
+                <div class="range-flag" style="left: 75%;">250</div>
+                <div class="range-flag" style="left: 85%;">300</div>
+            </div>
+
+            <!-- Range layout features -->
+            <div style="position: absolute; bottom: 15%; left: 0; right: 0; height: 30%; background: linear-gradient(to top, #228B22, #90EE90); border-radius: 20px 20px 0 0; z-index: 1000;"></div>
+
+            <!-- Tee area -->
+            <div style="position: absolute; bottom: 5%; left: 5%; right: 85%; height: 10%; background: #654321; border-radius: 10px; z-index: 1001;"></div>
+
+            <div class="flying-ball" id="rangeFlyingBall"></div>
+            <div class="ball-shadow" id="rangeBallShadow"></div>
+
+            <div class="environment-controls">
+                <button class="env-btn" onclick="takeRangeShot()">🏌️ Hit Shot</button>
+                <button class="env-btn" onclick="changeRangeClub()">⚡ Change Club</button>
+                <button class="env-btn" onclick="closeRangeEnvironment()">📱 Exit Range</button>
+            </div>
+        </div>
+
+        <!-- Immersive Course Environment -->
+        <div id="courseEnvironment" class="immersive-environment course-environment">
+            <div class="environment-hud">
+                <div class="hud-top">
+                    <div>
+                        <strong id="courseHoleTitle">Augusta Hole 1 - Tea Olive</strong>
+                        <div style="font-size: 12px; opacity: 0.8;" id="courseHoleDesc">Opening drive sets the tone</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 16px;">Par <span id="courseParHUD">4</span></div>
+                        <div style="font-size: 12px;"><span id="courseDistanceHUD">445</span> yards</div>
+                    </div>
+                </div>
+                
+                <div class="hud-metrics">
+                    <div class="hud-metric">
+                        <strong id="courseSpeedHUD">0</strong>
+                        <span>Ball Speed</span>
+                    </div>
+                    <div class="hud-metric">
+                        <strong id="courseDistanceHUD2">0</strong>
+                        <span>Carry</span>
+                    </div>
+                    <div class="hud-metric">
+                        <strong id="courseStrokesHUD">1</strong>
+                        <span>Strokes</span>
+                    </div>
+                    <div class="hud-metric">
+                        <strong id="courseScoreHUD">E</strong>
+                        <span>Score</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course features -->
+            <div class="course-features">
+                <div class="fairway"></div>
+                <div class="rough-left"></div>
+                <div class="rough-right"></div>
+                <div class="green">
+                    <div class="pin"></div>
+                </div>
+                <div class="water-hazard" id="waterHazard" style="display: none;"></div>
+            </div>
+
+            <!-- Trees for Augusta atmosphere -->
+            <div class="trees">
+                <div class="tree" style="left: 10%; bottom: 20%;">🌲</div>
+                <div class="tree" style="left: 15%; bottom: 35%;">🌳</div>
+                <div class="tree" style="left: 80%; bottom: 25%;">🌲</div>
+                <div class="tree" style="left: 85%; bottom: 40%;">🌳</div>
+                <div class="tree" style="left: 90%; bottom: 15%;">🌲</div>
+            </div>
+
+            <!-- Tee box for first shot -->
+            <div class="tee-box-view">
+                <div class="tee-markers">
+                    <div class="tee-marker blue"></div>
+                    <div class="tee-marker white"></div>
+                    <div class="tee-marker red"></div>
+                </div>
+            </div>
+
+            <div class="flying-ball" id="courseFlyingBall"></div>
+            <div class="ball-shadow" id="courseBallShadow"></div>
+            <div class="trajectory-line" id="courseTrajectoryLine"></div>
+
+            <div class="environment-controls">
+                <button class="env-btn" onclick="takeCourseShot()">🏌️ Hit Shot</button>
+                <button class="env-btn" onclick="changeCourseClub()">⚡ Change Club</button>
+                <button class="env-btn" onclick="closeCourseEnvironment()">📱 Exit Hole</button>
+            </div>
+        </div>
             <div style="background: linear-gradient(135deg, #2d5a27, #4a7c59); border-radius: 25px; padding: 30px; text-align: center; max-width: 90vw; border: 2px solid #90EE90;">
                 <div style="font-size: 48px; margin-bottom: 15px;">⛳</div>
                 <div style="font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #90EE90;">Ball on Green!</div>
@@ -802,32 +1190,83 @@
             const launchAngle = Math.round(8 + Math.random() * 16);
             const spinRate = Math.round(2000 + Math.random() * 2000);
             
-            // Update shot analysis
-            document.getElementById('ballSpeedResult').textContent = ballSpeed + ' mph';
-            document.getElementById('distanceResult').textContent = actualDistance + ' yds';
-            document.getElementById('launchAngleResult').textContent = launchAngle + '°';
-            document.getElementById('spinRateResult').textContent = spinRate + ' rpm';
+            const shotData = {
+                distance: actualDistance,
+                speed: ballSpeed,
+                angle: launchAngle,
+                spin: spinRate,
+                club: club
+            };
+            
+            // Show ball flight animation first (for course mode)
+            if (appState.currentMode === 'course') {
+                animateBallFlight(shotData);
+                
+                // Show shot analysis after flight animation
+                setTimeout(() => {
+                    showShotAnalysis(shotData);
+                    updateCourseProgress(actualDistance);
+                }, 4000); // After 4 seconds (flight + landing)
+            } else {
+                // For practice/range modes, show analysis immediately
+                showShotAnalysis(shotData);
+                
+                if (appState.currentMode === 'range') {
+                    updateRangeStats(actualDistance);
+                }
+            }
+        }
+
+        function showShotAnalysis(shotData) {
+            // Update shot analysis display
+            document.getElementById('ballSpeedResult').textContent = shotData.speed + ' mph';
+            document.getElementById('distanceResult').textContent = shotData.distance + ' yds';
+            document.getElementById('launchAngleResult').textContent = shotData.angle + '°';
+            document.getElementById('spinRateResult').textContent = shotData.spin + ' rpm';
             
             // Show analysis
             document.getElementById('shotAnalysis').style.display = 'block';
             
-            // Update mode-specific data
-            if (appState.currentMode === 'range') {
-                updateRangeStats(actualDistance);
-            } else if (appState.currentMode === 'course') {
-                updateCourseProgress(actualDistance);
-            }
-            
             // Add to history
             const shot = {
                 time: new Date().toLocaleTimeString(),
-                club: club,
-                distance: actualDistance,
-                speed: ballSpeed
+                club: shotData.club,
+                distance: shotData.distance,
+                speed: shotData.speed
             };
             appState.shotHistory.unshift(shot);
             appState.shotHistory = appState.shotHistory.slice(0, 5);
             updateShotHistory();
+        }
+
+        function showPuttingInterface() {
+            const course = courses[appState.selectedCourse];
+            const hole = course.holes[appState.currentHole - 1];
+            
+            // Calculate distance to pin (3-25 feet based on approach accuracy)
+            const pinDistance = Math.round(3 + Math.random() * 22);
+            
+            // Random slope difficulty
+            const slopeDifficulty = Math.floor(Math.random() * 3) + 1;
+            
+            // Update interface
+            document.getElementById('pinDistance').textContent = pinDistance + ' feet';
+            
+            // Update slope indicators
+            document.querySelectorAll('[id^="slope"]').forEach(dot => {
+                dot.style.background = 'rgba(255,255,255,0.3)';
+            });
+            document.getElementById(`slope${slopeDifficulty}`).style.background = '#FF6B6B';
+            
+            const descriptions = {
+                1: "Straight putt, minimal break",
+                2: "Moderate break, manageable slope",
+                3: "Severe break, tricky read required"
+            };
+            document.getElementById('slopeDescription').textContent = descriptions[slopeDifficulty];
+            
+            // Show interface
+            document.getElementById('puttingInterface').style.display = 'flex';
         }
 
         function updateRangeStats(distance) {
@@ -853,48 +1292,241 @@
             updateClubStats();
         }
 
-        function updateCourseProgress(distance) {
+        // Immersive environment functions
+        function enterRangeEnvironment() {
+            updateRangeHUD();
+            document.getElementById('rangeEnvironment').classList.add('show');
+        }
+
+        function enterCourseEnvironment() {
+            updateCourseHUD();
+            setupCourseHole();
+            document.getElementById('courseEnvironment').classList.add('show');
+        }
+
+        function updateRangeHUD() {
+            document.getElementById('rangeClubDisplay').textContent = appState.selectedClub;
+            document.getElementById('rangeTargetDisplay').textContent = clubData[appState.selectedClub].distance;
+        }
+
+        function updateCourseHUD() {
             const course = courses[appState.selectedCourse];
             const hole = course.holes[appState.currentHole - 1];
             
-            // Add stroke
-            appState.courseStrokes[appState.currentHole - 1]++;
+            document.getElementById('courseHoleTitle').textContent = 
+                `${course.name} Hole ${appState.currentHole} - ${hole.name}`;
+            document.getElementById('courseHoleDesc').textContent = hole.description;
+            document.getElementById('courseParHUD').textContent = hole.par;
+            document.getElementById('courseDistanceHUD').textContent = hole.distance;
+            document.getElementById('courseStrokesHUD').textContent = 
+                appState.courseStrokes[appState.currentHole - 1] + 1;
             
-            // Check if ball reached green (85%+ of hole distance)
-            const progress = distance / hole.distance;
-            if (progress >= 0.85) {
-                setTimeout(() => {
-                    showPuttingInterface(hole, distance);
-                }, 2000);
+            // Update score
+            const totalStrokes = appState.courseStrokes.reduce((a, b) => a + b, 0);
+            const playedHoles = appState.currentHole - 1 + (appState.courseStrokes[appState.currentHole - 1] > 0 ? 0 : 0);
+            const totalPar = course.holes.slice(0, playedHoles).reduce((sum, h) => sum + h.par, 0);
+            const scoreDiff = totalStrokes - totalPar;
+            
+            let scoreText = 'E';
+            if (scoreDiff > 0) scoreText = '+' + scoreDiff;
+            else if (scoreDiff < 0) scoreText = '' + scoreDiff;
+            
+            document.getElementById('courseScoreHUD').textContent = scoreText;
+        }
+
+        function setupCourseHole() {
+            const course = courses[appState.selectedCourse];
+            const hole = course.holes[appState.currentHole - 1];
+            
+            // Show/hide water hazards based on hole
+            const waterHazard = document.getElementById('waterHazard');
+            if (hole.name.includes('Water') || hole.name === 'Golden Bell' || appState.currentHole === 12) {
+                waterHazard.style.display = 'block';
+            } else {
+                waterHazard.style.display = 'none';
             }
         }
 
-        function showPuttingInterface(hole, approachDistance) {
-            // Calculate distance to pin
-            const remainingDistance = hole.distance - approachDistance;
-            const pinDistance = Math.max(3, Math.min(35, remainingDistance * 0.3 + Math.random() * 15));
+        function takeRangeShot() {
+            if (!document.getElementById('rangeEnvironment').classList.contains('show')) {
+                enterRangeEnvironment();
+                return;
+            }
+
+            // Generate shot data
+            const shotData = generateShotData();
             
-            // Random slope difficulty
-            const slopeDifficulty = Math.floor(Math.random() * 3) + 1;
+            // Update HUD with live data
+            document.getElementById('rangeSpeedHUD').textContent = shotData.speed + ' mph';
+            document.getElementById('rangeDistanceHUD').textContent = shotData.distance + ' yds';
+            document.getElementById('rangeAngleHUD').textContent = shotData.angle + '°';
+            document.getElementById('rangeSpinHUD').textContent = shotData.spin + ' rpm';
             
-            // Update interface
-            document.getElementById('pinDistance').textContent = Math.round(pinDistance) + ' feet';
+            // Animate ball flight to range targets
+            animateRangeBallFlight(shotData);
             
-            // Update slope indicators
-            document.querySelectorAll('[id^="slope"]').forEach(dot => {
-                dot.style.background = 'rgba(255,255,255,0.3)';
-            });
-            document.getElementById(`slope${slopeDifficulty}`).style.background = '#FF6B6B';
+            // Update range stats
+            updateRangeStats(shotData.distance);
+        }
+
+        function takeCourseShot() {
+            if (!document.getElementById('courseEnvironment').classList.contains('show')) {
+                enterCourseEnvironment();
+                return;
+            }
+
+            // Generate shot data
+            const shotData = generateShotData();
             
-            const descriptions = {
-                1: "Straight putt, minimal break",
-                2: "Moderate break, manageable slope",
-                3: "Severe break, tricky read required"
+            // Update HUD
+            document.getElementById('courseSpeedHUD').textContent = shotData.speed + ' mph';
+            document.getElementById('courseDistanceHUD2').textContent = shotData.distance + ' yds';
+            
+            // Animate ball flight across Augusta hole
+            animateCourseBallFlight(shotData);
+            
+            // Update course progress
+            setTimeout(() => {
+                updateCourseProgress(shotData.distance);
+            }, 4000);
+        }
+
+        function generateShotData() {
+            const club = appState.selectedClub;
+            const baseDistance = clubData[club].distance;
+            const actualDistance = Math.round(baseDistance + (Math.random() - 0.5) * 40);
+            const ballSpeed = Math.round(actualDistance * 0.6 + Math.random() * 20);
+            const launchAngle = Math.round(8 + Math.random() * 16);
+            const spinRate = Math.round(2000 + Math.random() * 2000);
+            
+            return {
+                distance: actualDistance,
+                speed: ballSpeed,
+                angle: launchAngle,
+                spin: spinRate,
+                club: club
             };
-            document.getElementById('slopeDescription').textContent = descriptions[slopeDifficulty];
+        }
+
+        function animateRangeBallFlight(shotData) {
+            const ball = document.getElementById('rangeFlyingBall');
+            const shadow = document.getElementById('rangeBallShadow');
             
-            // Show interface
-            document.getElementById('puttingInterface').style.display = 'flex';
+            // Starting position (range tee)
+            const startX = window.innerWidth * 0.1;
+            const startY = window.innerHeight * 0.9;
+            
+            // Ending position based on distance
+            const progress = Math.min(shotData.distance / 300, 1);
+            const endX = startX + (window.innerWidth * 0.8) * progress;
+            const endY = window.innerHeight * 0.5;
+            
+            // Peak height
+            const peakHeight = shotData.angle * 8;
+            
+            animateBallTrajectory(ball, shadow, startX, startY, endX, endY, peakHeight, 3000);
+        }
+
+        function animateCourseBallFlight(shotData) {
+            const ball = document.getElementById('courseFlyingBall');
+            const shadow = document.getElementById('courseBallShadow');
+            const trajectory = document.getElementById('courseTrajectoryLine');
+            
+            // Starting position (tee box)
+            const startX = window.innerWidth * 0.1;
+            const startY = window.innerHeight * 0.85;
+            
+            // Ending position based on hole distance
+            const hole = courses[appState.selectedCourse].holes[appState.currentHole - 1];
+            const progress = Math.min(shotData.distance / hole.distance, 1);
+            const endX = startX + (window.innerWidth * 0.7) * progress;
+            const endY = window.innerHeight * 0.4;
+            
+            // Peak height
+            const peakHeight = shotData.angle * 10;
+            
+            // Show trajectory line
+            trajectory.style.opacity = '0.6';
+            trajectory.style.left = startX + 'px';
+            trajectory.style.top = (startY - peakHeight/2) + 'px';
+            trajectory.style.width = (endX - startX) + 'px';
+            trajectory.style.transform = `rotate(${-shotData.angle/3}deg)`;
+            
+            animateBallTrajectory(ball, shadow, startX, startY, endX, endY, peakHeight, 4000);
+        }
+
+        function animateBallTrajectory(ball, shadow, startX, startY, endX, endY, peakHeight, duration) {
+            let animationStart = performance.now();
+
+            function animateFrame(currentTime) {
+                const elapsed = currentTime - animationStart;
+                const progress = Math.min(elapsed / duration, 1);
+
+                if (progress < 1) {
+                    // Parabolic trajectory
+                    const x = startX + (endX - startX) * progress;
+                    const heightFactor = Math.sin(progress * Math.PI);
+                    const y = startY - (endY - startY) * progress - (heightFactor * peakHeight);
+                    
+                    // Update ball position
+                    ball.style.left = x + 'px';
+                    ball.style.top = y + 'px';
+                    ball.style.display = 'block';
+                    
+                    // Update shadow
+                    const shadowSize = 6 + (heightFactor * 6);
+                    shadow.style.left = x + 'px';
+                    shadow.style.top = (startY + 5) + 'px';
+                    shadow.style.width = shadowSize + 'px';
+                    shadow.style.height = shadowSize + 'px';
+                    shadow.style.opacity = 0.3 + (heightFactor * 0.3);
+                    shadow.style.display = 'block';
+                    
+                    requestAnimationFrame(animateFrame);
+                } else {
+                    // Landing
+                    ball.style.left = endX + 'px';
+                    ball.style.top = endY + 'px';
+                    
+                    // Landing effect
+                    showLandingEffect(endX, endY);
+                    
+                    // Hide ball after landing
+                    setTimeout(() => {
+                        ball.style.display = 'none';
+                        shadow.style.display = 'none';
+                    }, 1000);
+                }
+            }
+
+            requestAnimationFrame(animateFrame);
+        }
+
+        function changeRangeClub() {
+            const clubs = Object.keys(clubData);
+            const currentIndex = clubs.indexOf(appState.selectedClub);
+            const nextIndex = (currentIndex + 1) % clubs.length;
+            appState.selectedClub = clubs[nextIndex];
+            updateRangeHUD();
+            
+            // Also update driving range mode display
+            updateClubStats();
+        }
+
+        function changeCourseClub() {
+            const clubs = Object.keys(clubData);
+            const currentIndex = clubs.indexOf(appState.selectedClub);
+            const nextIndex = (currentIndex + 1) % clubs.length;
+            appState.selectedClub = clubs[nextIndex];
+            updateCourseHUD();
+        }
+
+        function closeRangeEnvironment() {
+            document.getElementById('rangeEnvironment').classList.remove('show');
+        }
+
+        function closeCourseEnvironment() {
+            document.getElementById('courseEnvironment').classList.remove('show');
         }
 
         function selectPuttResult(putts) {
