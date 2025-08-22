@@ -1,0 +1,1991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Garage Golf Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: white;
+            overflow-x: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .container {
+            max-width: 100vw;
+            min-height: 100vh;
+            padding: 10px;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            padding: 15px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .mode-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .driving-range-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .driving-range-section.active {
+            display: block;
+        }
+
+        .club-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .club-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 15px 8px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .club-btn.selected {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .club-stats {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .distance-target {
+            background: linear-gradient(45deg, #2d5a27, #4a7c59);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .target-distance {
+            font-size: 36px;
+            font-weight: bold;
+            color: #90EE90;
+            margin-bottom: 10px;
+        }
+
+        .accuracy-feedback {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .course-play-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .course-play-section.active {
+            display: block;
+        }
+
+        .course-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .course-card {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .course-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .course-card.selected {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+        }
+
+        .course-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .course-info {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .hole-display {
+            background: linear-gradient(45deg, #2d5a27, #4a7c59);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .hole-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .hole-visual {
+            height: 100px;
+            background: linear-gradient(to right, #654321 0%, #90EE90 20%, #90EE90 80%, #FFD700 100%);
+            border-radius: 10px;
+            position: relative;
+            margin: 15px 0;
+        }
+
+        .profile-section {
+            background: rgba(156, 39, 176, 0.2);
+            border: 1px solid #9C27B0;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .handicap-display {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .handicap-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #E91E63;
+        }
+
+        .putting-interface {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .putting-interface.show {
+            display: flex;
+        }
+
+        .putting-card {
+            background: linear-gradient(135deg, #2d5a27, #4a7c59);
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+            max-width: 90vw;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border: 2px solid #90EE90;
+        }
+
+        .green-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .putting-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #90EE90;
+        }
+
+        .pin-distance {
+            font-size: 36px;
+            font-weight: bold;
+            color: #FFD700;
+            margin: 15px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .slope-indicator {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .slope-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .slope-difficulty {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .slope-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .slope-dot.active {
+            background: #FF6B6B;
+            transform: scale(1.2);
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.6);
+        }
+
+        .slope-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .putt-selection {
+            margin-top: 25px;
+        }
+
+        .putt-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .putt-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .putt-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            min-width: 120px;
+        }
+
+        .putt-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+        }
+
+        .putt-btn.two-putt {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .putt-btn.two-putt:hover {
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.6);
+        }
+
+        .putting-tips {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 193, 7, 0.2);
+            border-radius: 10px;
+            border: 1px solid #FFC107;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .camera-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #videoStream {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .camera-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 48px;
+            opacity: 0.5;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .camera-btn {
+            flex: 1;
+            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .camera-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .camera-btn.active {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .camera-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .setup-instructions {
+            background: rgba(255, 193, 7, 0.2);
+            border: 2px solid #FFC107;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .setup-instructions h3 {
+            color: #FFC107;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .setup-instructions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .setup-instructions li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .setup-instructions li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .tracking-zone {
+            position: absolute;
+            border: 2px dashed #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .ball-trail {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ff0000;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .shot-analysis {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            transform: scale(0);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .shot-analysis.show {
+            transform: scale(1);
+        }
+
+        .ball-path-visualization {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .path-canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 70%, #8FBC8F 100%);
+        }
+
+        .swing-metrics {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metrics-grid-large {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .spin-visualization {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .spin-ball {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #f0f0f0, #d0d0d0);
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .spin-arrow {
+            position: absolute;
+            font-size: 24px;
+            animation: spin-rotate 2s linear infinite;
+        }
+
+        .backspin { top: -30px; left: 50%; transform: translateX(-50%); }
+        .sidespin { right: -30px; top: 50%; transform: translateY(-50%); }
+
+        @keyframes spin-rotate {
+            from { transform: rotate(0deg) translateX(-50%); }
+            to { transform: rotate(360deg) translateX(-50%); }
+        }
+
+        .path-data {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .close-analysis {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .metric-title {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #90EE90;
+        }
+
+        .calibration-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .calibration-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .calibration-btn {
+            flex: 1;
+            background: rgba(156, 39, 176, 0.8);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .calibration-btn:hover {
+            background: rgba(156, 39, 176, 1);
+        }
+
+        .distance-settings {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .distance-input {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            color: white;
+            font-size: 16px;
+            width: 80px;
+            text-align: center;
+        }
+
+        .distance-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4444;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.active {
+            background: #44ff44;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .tips-section {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .tips-section h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .shot-history {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .shot-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+
+        .shot-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 480px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .camera-controls,
+            .calibration-controls {
+                flex-direction: column;
+            }
+            
+            .distance-settings {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏌️ Garage Golf Simulator</h1>
+            <p>Real Ball Flight Tracking</p>
+            
+            <div class="mode-selector">
+                <button class="mode-btn active" id="practiceMode" onclick="switchMode('practice')">
+                    📹 Practice Mode
+                </button>
+                <button class="mode-btn" id="drivingRangeMode" onclick="switchMode('range')">
+                    🎯 Driving Range
+                </button>
+                <button class="mode-btn" id="coursePlayMode" onclick="switchMode('course')">
+                    ⛳ Course Play
+                </button>
+            </div>
+        </div>
+
+        <!-- Practice Mode (Original Camera Section) -->
+        <div id="practiceModeSection" class="mode-section active">
+            <div class="setup-instructions">
+                <h3>📋 Setup Instructions</h3>
+                <ul>
+                    <li>Place iPhone 6-10 feet from hitting area</li>
+                    <li>Ensure good lighting in your garage</li>
+                    <li>Use white golf balls for better tracking</li>
+                    <li>Clear background behind ball flight path</li>
+                    <li>Calibrate distance for accurate measurements</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Driving Range Mode -->
+        <div id="drivingRangeModeSection" class="driving-range-section">
+            <h3>🎯 Driving Range Practice</h3>
+            <p>Perfect your distances with each club and build your yardage profile</p>
+            
+            <div class="club-selector">
+                <button class="club-btn selected" onclick="selectClub('Driver')">Driver</button>
+                <button class="club-btn" onclick="selectClub('3W')">3-Wood</button>
+                <button class="club-btn" onclick="selectClub('5W')">5-Wood</button>
+                <button class="club-btn" onclick="selectClub('3I')">3-Iron</button>
+                <button class="club-btn" onclick="selectClub('4I')">4-Iron</button>
+                <button class="club-btn" onclick="selectClub('5I')">5-Iron</button>
+                <button class="club-btn" onclick="selectClub('6I')">6-Iron</button>
+                <button class="club-btn" onclick="selectClub('7I')">7-Iron</button>
+                <button class="club-btn" onclick="selectClub('8I')">8-Iron</button>
+                <button class="club-btn" onclick="selectClub('9I')">9-Iron</button>
+                <button class="club-btn" onclick="selectClub('PW')">PW</button>
+                <button class="club-btn" onclick="selectClub('SW')">SW</button>
+                <button class="club-btn" onclick="selectClub('LW')">LW</button>
+            </div>
+
+            <div class="distance-target">
+                <div class="target-distance" id="targetDistance">250 yds</div>
+                <div>Target Distance - <span id="selectedClub">Driver</span></div>
+                <div class="accuracy-feedback" id="accuracyFeedback">Hit a shot to see accuracy</div>
+            </div>
+
+            <div class="club-stats">
+                <h4>📊 <span id="clubStatsTitle">Driver</span> Statistics</h4>
+                <div class="stat-row">
+                    <span>Average Distance:</span>
+                    <span id="avgDistance">0 yds</span>
+                </div>
+                <div class="stat-row">
+                    <span>Best Shot:</span>
+                    <span id="bestShot">0 yds</span>
+                </div>
+                <div class="stat-row">
+                    <span>Shots Hit:</span>
+                    <span id="shotsHit">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Accuracy:</span>
+                    <span id="clubAccuracy">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Play Mode -->
+        <div id="coursePlayModeSection" class="course-play-section">
+            <h3>⛳ Play Golf Courses</h3>
+            
+            <div class="course-selector">
+                <div class="course-card selected" onclick="selectCourse('pebble')">
+                    <div class="course-name">Pebble Beach</div>
+                    <div class="course-info">Par 72 • 6,828 yds</div>
+                    <div class="course-info">Championship Course</div>
+                </div>
+                <div class="course-card" onclick="selectCourse('augusta')">
+                    <div class="course-name">Augusta National</div>
+                    <div class="course-info">Par 72 • 7,475 yds</div>
+                    <div class="course-info">Masters Course</div>
+                </div>
+                <div class="course-card" onclick="selectCourse('stAndrews')">
+                    <div class="course-name">St. Andrews</div>
+                    <div class="course-info">Par 72 • 7,279 yds</div>
+                    <div class="course-info">The Old Course</div>
+                </div>
+                <div class="course-card" onclick="selectCourse('torrey')">
+                    <div class="course-name">Torrey Pines</div>
+                    <div class="course-info">Par 72 • 7,698 yds</div>
+                    <div class="course-info">South Course</div>
+                </div>
+            </div>
+
+            <div class="hole-display" id="courseHoleDisplay" style="display: none;">
+                <div class="hole-header">
+                    <div>
+                        <div style="font-size: 24px; font-weight: bold;">
+                            Hole <span id="courseHoleNumber">1</span>
+                        </div>
+                        <div id="courseHoleName">Ocean Views</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 28px; color: #90EE90; font-weight: bold;">
+                            <span id="courseHoleDistance">380</span> yds
+                        </div>
+                        <div>Par <span id="courseHolePar">4</span></div>
+                    </div>
+                </div>
+                
+                <div class="hole-visual">
+                    <div class="tee-box"></div>
+                    <div class="ball-position" id="courseBallPosition"></div>
+                    <div class="pin"></div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="control-btn" onclick="nextCourseHole()">Next Hole</button>
+                    <button class="control-btn" onclick="viewScorecard()">Scorecard</button>
+                    <button class="control-btn" onclick="quitRound()">Quit Round</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="camera-section">
+            <div class="video-container">
+                <video id="videoStream" autoplay playsinline muted></video>
+                <canvas id="canvas"></canvas>
+                <div class="camera-placeholder" id="cameraPlaceholder">
+                    📹
+                    <p style="font-size: 16px; margin-top: 10px;">Camera will appear here</p>
+                </div>
+                <div class="tracking-zone" id="trackingZone"></div>
+            </div>
+            
+            <div class="camera-controls">
+                <button class="camera-btn" id="startCamera" onclick="startCamera()">
+                    Start Camera
+                </button>
+                <button class="camera-btn" id="trackingBtn" onclick="toggleTracking()" disabled>
+                    Start Tracking
+                </button>
+                <button class="camera-btn" onclick="captureShot()" disabled id="captureBtn">
+                    Capture Shot
+                </button>
+            </div>
+        </div>
+
+        <div class="shot-history">
+            <h3>📈 Shot History</h3>
+            <div id="shotHistoryList">
+                <div style="text-align: center; opacity: 0.6; padding: 20px;">
+                    No shots recorded yet
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h3>👤 Your Golf Profile</h3>
+            <div class="profile-stats">
+                <div class="handicap-display">
+                    <div>Current Handicap</div>
+                    <div class="handicap-value" id="currentHandicap">--</div>
+                </div>
+                <div>
+                    <div class="stat-row">
+                        <span>Rounds Played:</span>
+                        <span id="roundsPlayed">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Best Score:</span>
+                        <span id="bestScore">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Avg. Score:</span>
+                        <span id="avgScore">--</span>
+                    </div>
+                </div>
+            </div>
+            <button class="save-profile-btn" onclick="saveProfile()">Save Profile Data</button>
+        </div>
+
+        <div class="status-indicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Camera not started</span>
+        </div>
+
+        <div class="calibration-section">
+            <h3>🎯 Calibration & Settings</h3>
+            <div class="distance-settings">
+                <label>Distance to Net/Wall:</label>
+                <input type="number" class="distance-input" id="distanceInput" placeholder="10" value="10">
+                <span>feet</span>
+            </div>
+            
+            <div class="calibration-controls">
+                <button class="calibration-btn" onclick="setTrackingZone()">
+                    Set Tracking Zone
+                </button>
+                <button class="calibration-btn" onclick="calibrateBallSize()">
+                    Calibrate Ball Size
+                </button>
+                <button class="calibration-btn" onclick="resetCalibration()">
+                    Reset Settings
+                </button>
+            </div>
+        </div>
+
+        <div class="shot-analysis" id="shotAnalysis">
+            <button class="close-analysis" onclick="closeShotAnalysis()">×</button>
+            <h3>🏌️ Complete Shot Analysis</h3>
+            
+            <!-- Ball Path Visualization -->
+            <div class="ball-path-visualization">
+                <canvas id="pathCanvas" class="path-canvas"></canvas>
+                <div class="path-data">
+                    <span>Peak Height: <strong id="peakHeight">25 ft</strong></span>
+                    <span>Apex Time: <strong id="apexTime">1.2s</strong></span>
+                    <span>Descent Angle: <strong id="descentAngle">-45°</strong></span>
+                </div>
+            </div>
+
+            <!-- Swing Metrics -->
+            <div class="swing-metrics">
+                <h4>⚡ Swing Data</h4>
+                <div class="metrics-grid-large">
+                    <div class="metric-card">
+                        <div class="metric-title">Club Speed</div>
+                        <div class="metric-value" id="clubSpeedMetric">95 mph</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Ball Speed</div>
+                        <div class="metric-value" id="ballSpeedMetric">140 mph</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Smash Factor</div>
+                        <div class="metric-value" id="smashFactorMetric">1.47</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ball Flight Metrics -->
+            <div class="swing-metrics">
+                <h4>🎯 Ball Flight</h4>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Launch Angle</div>
+                        <div class="metric-value" id="launchAngleMetric">12°</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Carry Distance</div>
+                        <div class="metric-value" id="carryDistanceMetric">245 yds</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Total Distance</div>
+                        <div class="metric-value" id="totalDistanceMetric">265 yds</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Carry Time</div>
+                        <div class="metric-value" id="carryTimeMetric">5.8s</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spin Data -->
+            <div class="swing-metrics">
+                <h4>🌀 Spin Analysis</h4>
+                <div class="spin-visualization">
+                    <div class="spin-ball">
+                        <div class="spin-arrow backspin" id="backspinArrow">↑</div>
+                        <div class="spin-arrow sidespin" id="sidespinArrow">→</div>
+                    </div>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Backspin</div>
+                        <div class="metric-value" id="backspinMetric">2850 rpm</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Sidespin</div>
+                        <div class="metric-value" id="sidespinMetric">-125 rpm</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Spin Rate</div>
+                        <div class="metric-value" id="spinRateMetric">2853 rpm</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Spin Axis</div>
+                        <div class="metric-value" id="spinAxisMetric">2.5°</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Metrics -->
+            <div class="swing-metrics">
+                <h4>📈 Advanced Data</h4>
+                <div class="metrics-grid-large">
+                    <div class="metric-card">
+                        <div class="metric-title">Attack Angle</div>
+                        <div class="metric-value" id="attackAngleMetric">-2.1°</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Club Path</div>
+                        <div class="metric-value" id="clubPathMetric">1.2° in</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Face Angle</div>
+                        <div class="metric-value" id="faceAngleMetric">0.5° open</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        .save-profile-btn {
+            background: linear-gradient(45deg, #9C27B0, #E91E63);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        <!-- Putting Interface Overlay -->
+        <div class="putting-interface" id="puttingInterface">
+            <div class="putting-card">
+                <div class="green-icon">⛳</div>
+                <div class="putting-title">Ball on Green!</div>
+                
+                <div class="pin-distance" id="pinDistance">12 feet</div>
+                <div style="opacity: 0.8; margin-bottom: 20px;">to the pin</div>
+                
+                <div class="slope-indicator">
+                    <div class="slope-title">Putt Difficulty</div>
+                    <div class="slope-difficulty">
+                        <div class="slope-dot" id="slope1"></div>
+                        <div class="slope-dot" id="slope2"></div>
+                        <div class="slope-dot" id="slope3"></div>
+                    </div>
+                    <div class="slope-labels">
+                        <span>Easy</span>
+                        <span>Medium</span>
+                        <span>Hard</span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 14px; opacity: 0.9;" id="slopeDescription">
+                        Moderate break, uphill putt
+                    </div>
+                </div>
+                
+                <div class="putt-selection">
+                    <div class="putt-title">Select Your Putting Result</div>
+                    <div class="putt-buttons">
+                        <button class="putt-btn" onclick="selectPuttResult(1)">
+                            ⚡ One Putt
+                        </button>
+                        <button class="putt-btn two-putt" onclick="selectPuttResult(2)">
+                            🎯 Two Putt
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="putting-tips">
+                    💡 Go to your putting green to practice this distance and slope, then select your result above
+                </div>
+            </div>
+        </div>
+
+        <div class="tips-section">
+            <h3>💡 Pro Tips</h3>
+            <ul>
+                <li>Use a net or impact screen for safety</li>
+                <li>Foam balls work great for indoor practice</li>
+                <li>Mount iPhone on tripod for stability</li>
+                <li>Good lighting is crucial for ball tracking</li>
+                <li>Start with slow swings to test tracking</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // App state
+        let appState = {
+            currentMode: 'practice',
+            camera: null,
+            isTracking: false,
+            canvas: null,
+            ctx: null,
+            trackingZone: {x: 0, y: 0, width: 0, height: 0},
+            ballSize: 10,
+            distanceToNet: 10,
+            lastBallPosition: null,
+            ballTrail: [],
+            shotHistory: [],
+            frameCount: 0,
+            selectedClub: 'Driver',
+            selectedCourse: 'pebble',
+            currentHole: 1,
+            courseStrokes: Array(18).fill(0),
+            clubStats: {},
+            profile: {
+                handicap: null,
+                roundsPlayed: 0,
+                scores: [],
+                bestScore: null
+            }
+        };
+
+        // Club data with typical distances
+        const clubData = {
+            'Driver': { distance: 250, loft: 10 },
+            '3W': { distance: 230, loft: 15 },
+            '5W': { distance: 210, loft: 18 },
+            '3I': { distance: 200, loft: 21 },
+            '4I': { distance: 185, loft: 24 },
+            '5I': { distance: 170, loft: 27 },
+            '6I': { distance: 155, loft: 30 },
+            '7I': { distance: 140, loft: 34 },
+            '8I': { distance: 125, loft: 38 },
+            '9I': { distance: 110, loft: 42 },
+            'PW': { distance: 95, loft: 46 },
+            'SW': { distance: 80, loft: 56 },
+            'LW': { distance: 65, loft: 60 }
+        };
+
+        // Course data
+        const courses = {
+            pebble: {
+                name: "Pebble Beach",
+                holes: [
+                    {name: "Ocean Views", par: 4, distance: 380, description: "Gentle dogleg right with ocean views"},
+                    {name: "Coastal Breeze", par: 5, distance: 502, description: "Long par 5 along the coastline"},
+                    {name: "Cliff Edge", par: 4, distance: 390, description: "Dramatic tee shot over coastal rocks"},
+                    {name: "Pine Valley", par: 3, distance: 188, description: "Short iron to elevated green"},
+                    {name: "Ocean Drive", par: 4, distance: 166, description: "Short par 4 with ocean carry"},
+                    {name: "Monterey Bay", par: 5, distance: 513, description: "Risk/reward par 5"},
+                    {name: "Seal Point", par: 3, distance: 106, description: "Short but treacherous par 3"},
+                    {name: "Carmel Gate", par: 4, distance: 418, description: "Long par 4 uphill finish"},
+                    {name: "Pacific Dunes", par: 4, distance: 464, description: "Championship test"},
+                    {name: "Stillwater", par: 4, distance: 495, description: "Heroic carry over water"},
+                    {name: "Bird Rock", par: 4, distance: 384, description: "Scenic par 4"},
+                    {name: "Pescadero", par: 3, distance: 202, description: "Long iron over water"},
+                    {name: "Dune Links", par: 4, distance: 399, description: "Links-style challenge"},
+                    {name: "Fanshell", par: 5, distance: 573, description: "Long par 5 with water"},
+                    {name: "Seal Rocks", par: 4, distance: 397, description: "Spectacular ocean views"},
+                    {name: "Spyglass", par: 4, distance: 402, description: "Tough finishing hole"},
+                    {name: "Cypress Point", par: 3, distance: 218, description: "World-famous par 3"},
+                    {name: "Pebble Beach", par: 5, distance: 543, description: "Iconic 18th hole finish"}
+                ]
+            },
+            augusta: {
+                name: "Augusta National",
+                holes: [
+                    {name: "Tea Olive", par: 4, distance: 445, description: "Opening drive sets the tone"},
+                    {name: "Pink Dogwood", par: 5, distance: 575, description: "Reachable par 5 with risk"},
+                    {name: "Flowering Peach", par: 4, distance: 350, description: "Short but demanding accuracy"},
+                    {name: "Flowering Crab Apple", par: 3, distance: 240, description: "Long iron to sloped green"},
+                    {name: "Magnolia", par: 4, distance: 495, description: "Longest par 4 on course"},
+                    {name: "Juniper", par: 3, distance: 180, description: "Downhill par 3"},
+                    {name: "Pampas", par: 4, distance: 450, description: "Uphill challenge"},
+                    {name: "Yellow Jasmine", par: 5, distance: 570, description: "Reachable in two"},
+                    {name: "Carolina Cherry", par: 4, distance: 460, description: "Demanding approach"},
+                    {name: "Camellia", par: 4, distance: 495, description: "Sharp dogleg left"},
+                    {name: "White Dogwood", par: 4, distance: 520, description: "Pond guards green"},
+                    {name: "Golden Bell", par: 3, distance: 155, description: "Famous Amen Corner"},
+                    {name: "Azalea", par: 5, distance: 510, description: "Amen Corner finale"},
+                    {name: "Chinese Fir", par: 4, distance: 440, description: "Steep uphill climb"},
+                    {name: "Firethorn", par: 5, distance: 550, description: "Eagle opportunity"},
+                    {name: "Redbud", par: 3, distance: 170, description: "Tricky pin positions"},
+                    {name: "Nandina", par: 4, distance: 440, description: "Narrow fairway"},
+                    {name: "Holly", par: 4, distance: 465, description: "Championship finish"}
+                ]
+            },
+            stAndrews: {
+                name: "St. Andrews - The Old Course", 
+                holes: [
+                    {name: "Burn", par: 4, distance: 376, description: "Opening drive over Swilcan Burn"},
+                    {name: "Dyke", par: 4, distance: 453, description: "Long par 4 with hidden dangers"},
+                    {name: "Cartgate (Out)", par: 4, distance: 398, description: "Strategic positioning required"},
+                    {name: "Ginger Beer", par: 4, distance: 480, description: "Longest par 4"},
+                    {name: "Hole O'Cross (Out)", par: 5, distance: 568, description: "Reachable par 5"},
+                    {name: "Heathery (Out)", par: 4, distance: 412, description: "Blind approach"},
+                    {name: "High (Out)", par: 4, distance: 359, description: "Short but tricky"},
+                    {name: "Short", par: 3, distance: 175, description: "Famous short hole"},
+                    {name: "End", par: 4, distance: 352, description: "Turn for home"},
+                    {name: "Bobby Jones", par: 4, distance: 386, description: "Named after the legend"},
+                    {name: "High (In)", par: 3, distance: 174, description: "Eden green awaits"},
+                    {name: "Heathery (In)", par: 4, distance: 348, description: "Approach to the green"},
+                    {name: "Hole O'Cross (In)", par: 4, distance: 465, description: "Coffins bunker lurks"},
+                    {name: "Long", par: 5, distance: 618, description: "Longest hole on course"},
+                    {name: "Cartgate (In)", par: 4, distance: 455, description: "Principal's Nose"},
+                    {name: "Corner of the Dyke", par: 4, distance: 418, description: "Deacon Syme bunker"},
+                    {name: "Road", par: 4, distance: 495, description: "Famous road hole"},
+                    {name: "Tom Morris", par: 4, distance: 357, description: "Valley of Sin awaits"}
+                ]
+            },
+            torrey: {
+                name: "Torrey Pines South",
+                holes: [
+                    {name: "Pacific Start", par: 4, distance: 454, description: "Championship opening"},
+                    {name: "Coastal Views", par: 4, distance: 389, description: "Ocean backdrop"},
+                    {name: "Canyon Edge", par: 3, distance: 198, description: "Carry over ravine"},
+                    {name: "Torrey Pine", par: 4, distance: 452, description: "Signature tree hole"},
+                    {name: "Barranca", par: 4, distance: 453, description: "Canyon carry required"},
+                    {name: "Gliderport", par: 3, distance: 217, description: "Long iron test"},
+                    {name: "La Jolla", par: 4, distance: 434, description: "Elevated tee shot"},
+                    {name: "Sunset Cliffs", par: 4, distance: 417, description: "Dramatic ocean views"},
+                    {name: "Black's Beach", par: 4, distance: 472, description: "Long and challenging"},
+                    {name: "Del Mar", par: 4, distance: 436, description: "Strategic dogleg"},
+                    {name: "Scripps Pier", par: 4, distance: 221, description: "Short but demanding"},
+                    {name: "Mount Soledad", par: 4, distance: 504, description: "Longest par 4"},
+                    {name: "Farmers", par: 3, distance: 229, description: "Elevated green"},
+                    {name: "Salk Institute", par: 4, distance: 447, description: "Risk/reward approach"},
+                    {name: "UCSD", par: 5, distance: 570, description: "Reachable par 5"},
+                    {name: "Gliding Club", par: 3, distance: 178, description: "Precise iron required"},
+                    {name: "Hang Glider", par: 4, distance: 418, description: "Soar to the finish"},
+                    {name: "South Course", par: 5, distance: 570, description: "Championship finale"}
+                ]
+            }
+        };
+
+        // Computer vision variables
+        let previousFrame = null;
+        let ballDetected = false;
+        let shotStartTime = null;
+        let shotData = {
+            positions: [],
+            timestamps: [],
+            speed: 0,
+            angle: 0,
+            distance: 0,
+            carryTime: 0
+        };
+
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+
+                const video = document.getElementById('videoStream');
+                video.srcObject = stream;
+                appState.camera = stream;
+
+                // Hide placeholder
+                document.getElementById('cameraPlaceholder').style.display = 'none';
+                
+                // Setup canvas
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+                appState.canvas = canvas;
+                appState.ctx = ctx;
+
+                // Update UI
+                document.getElementById('startCamera').textContent = 'Camera Active';
+                document.getElementById('startCamera').classList.add('active');
+                document.getElementById('trackingBtn').disabled = false;
+                document.getElementById('captureBtn').disabled = false;
+                updateStatus('Camera active', true);
+
+                // Start processing frames
+                video.addEventListener('loadedmetadata', () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    processFrame();
+                });
+
+            } catch (error) {
+                console.error('Camera access failed:', error);
+                alert('Camera access failed. Please ensure you have granted camera permissions.');
+                updateStatus('Camera access failed', false);
+            }
+        }
+
+        function toggleTracking() {
+            appState.isTracking = !appState.isTracking;
+            const btn = document.getElementById('trackingBtn');
+            
+            if (appState.isTracking) {
+                btn.textContent = 'Stop Tracking';
+                btn.classList.add('active');
+                updateStatus('Ball tracking active', true);
+                resetShotData();
+            } else {
+                btn.textContent = 'Start Tracking';
+                btn.classList.remove('active');
+                updateStatus('Camera active', true);
+            }
+        }
+
+        function processFrame() {
+            if (!appState.camera) return;
+
+            const video = document.getElementById('videoStream');
+            const canvas = appState.canvas;
+            const ctx = appState.ctx;
+
+            if (video.readyState >= 2) {
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (appState.isTracking) {
+                    // Draw tracking zone
+                    ctx.strokeStyle = '#00ff00';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(
+                        appState.trackingZone.x,
+                        appState.trackingZone.y,
+                        appState.trackingZone.width,
+                        appState.trackingZone.height
+                    );
+
+                    // Simulate ball detection (in a real implementation, this would use computer vision)
+                    if (Math.random() < 0.1) { // Simulate occasional ball detection
+                        simulateBallDetection();
+                    }
+                }
+
+                // Draw ball trail
+                drawBallTrail(ctx);
+            }
+
+            appState.frameCount++;
+            requestAnimationFrame(processFrame);
+        }
+
+        function simulateBallDetection() {
+            // Simulate ball movement across the screen
+            const timestamp = performance.now();
+            
+            if (!shotStartTime) {
+                shotStartTime = timestamp;
+            }
+
+            const elapsed = timestamp - shotStartTime;
+            
+            // Simulate ball trajectory
+            const x = 100 + (elapsed / 10);
+            const y = 200 + Math.sin(elapsed / 200) * 50;
+            
+            shotData.positions.push({x, y});
+            shotData.timestamps.push(timestamp);
+
+            // Draw ball
+            appState.ctx.fillStyle = '#ffffff';
+            appState.ctx.beginPath();
+            appState.ctx.arc(x, y, appState.ballSize, 0, 2 * Math.PI);
+            appState.ctx.fill();
+
+            // Add to trail
+            appState.ballTrail.push({x, y, timestamp});
+
+            // Clean old trail points
+            const trailDuration = 1000; // 1 second
+            appState.ballTrail = appState.ballTrail.filter(point => 
+                timestamp - point.timestamp < trailDuration
+            );
+
+            // End simulation after 2 seconds
+            if (elapsed > 2000 && shotData.positions.length > 5) {
+                finalizeShotAnalysis();
+            }
+        }
+
+        function drawBallTrail(ctx) {
+            if (appState.ballTrail.length < 2) return;
+
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            for (let i = 0; i < appState.ballTrail.length; i++) {
+                const point = appState.ballTrail[i];
+                if (i === 0) {
+                    ctx.moveTo(point.x, point.y);
+                } else {
+                    ctx.lineTo(point.x, point.y);
+                }
+            }
+            
+            ctx.stroke();
+        }
+
+        function finalizeShotAnalysis() {
+            if (shotData.positions.length < 2) return;
+
+            // Calculate metrics
+            const positions = shotData.positions;
+            const timestamps = shotData.timestamps;
+            
+            // Ball speed calculation
+            const distance2D = Math.sqrt(
+                Math.pow(positions[positions.length-1].x - positions[0].x, 2) +
+                Math.pow(positions[positions.length-1].y - positions[0].y, 2)
+            );
+            
+            const timeElapsed = (timestamps[timestamps.length-1] - timestamps[0]) / 1000;
+            const pixelsPerFoot = 50; // Calibration factor
+            const speedFPS = (distance2D / pixelsPerFoot) / timeElapsed;
+            const speedMPH = speedFPS * 0.681818;
+
+            // Launch angle
+            const deltaY = positions[Math.floor(positions.length/4)].y - positions[0].y;
+            const deltaX = positions[Math.floor(positions.length/4)].x - positions[0].x;
+            const angle = Math.atan2(-deltaY, deltaX) * (180 / Math.PI);
+
+            // Estimated distance
+            const estimatedDistance = (speedMPH * speedMPH * Math.sin(2 * angle * Math.PI / 180)) / 32.2;
+
+            shotData.speed = Math.max(0, Math.min(speedMPH, 200));
+            shotData.angle = Math.max(-30, Math.min(angle, 60));
+            shotData.distance = Math.max(0, Math.min(estimatedDistance * 3, 300));
+            shotData.carryTime = timeElapsed;
+
+            displayShotAnalysis();
+            addToShotHistory();
+            resetShotData();
+        }
+
+        function displayShotAnalysis() {
+            // Generate realistic shot data
+            const shotMetrics = generateShotMetrics();
+            
+            // Update all metrics
+            document.getElementById('clubSpeedMetric').textContent = shotMetrics.clubSpeed + ' mph';
+            document.getElementById('ballSpeedMetric').textContent = shotMetrics.ballSpeed + ' mph';
+            document.getElementById('smashFactorMetric').textContent = shotMetrics.smashFactor;
+            
+            document.getElementById('launchAngleMetric').textContent = shotMetrics.launchAngle + '°';
+            document.getElementById('carryDistanceMetric').textContent = shotMetrics.carryDistance + ' yds';
+            document.getElementById('totalDistanceMetric').textContent = shotMetrics.totalDistance + ' yds';
+            document.getElementById('carryTimeMetric').textContent = shotMetrics.carryTime + 's';
+            
+            document.getElementById('backspinMetric').textContent = shotMetrics.backspin + ' rpm';
+            document.getElementById('sidespinMetric').textContent = 
+                (shotMetrics.sidespin >= 0 ? '+' : '') + shotMetrics.sidespin + ' rpm';
+            document.getElementById('spinRateMetric').textContent = shotMetrics.spinRate + ' rpm';
+            document.getElementById('spinAxisMetric').textContent = shotMetrics.spinAxis + '°';
+            
+            document.getElementById('peakHeight').textContent = shotMetrics.peakHeight + ' ft';
+            document.getElementById('apexTime').textContent = shotMetrics.apexTime + 's';
+            document.getElementById('descentAngle').textContent = shotMetrics.descentAngle + '°';
+            
+            document.getElementById('attackAngleMetric').textContent = 
+                (shotMetrics.attackAngle >= 0 ? '+' : '') + shotMetrics.attackAngle + '°';
+            document.getElementById('clubPathMetric').textContent = shotMetrics.clubPath;
+            document.getElementById('faceAngleMetric').textContent = shotMetrics.faceAngle;
+
+            // Update spin visualization
+            updateSpinVisualization(shotMetrics.backspin, shotMetrics.sidespin);
+            
+            // Draw ball path
+            drawBallPath(shotMetrics);
+
+            // Update mode-specific data
+            if (appState.currentMode === 'range') {
+                updateDrivingRangeStats(shotMetrics.carryDistance);
+            } else if (appState.currentMode === 'course') {
+                updateCourseProgress(shotMetrics.carryDistance);
+            }
+
+            const analysis = document.getElementById('shotAnalysis');
+            analysis.classList.add('show');
+        }
+
+        function updateDrivingRangeStats(distance) {
+            const club = appState.selectedClub;
+            
+            // Add shot to club stats
+            if (!appState.clubStats[club]) {
+                appState.clubStats[club] = { shots: [], total: 0, best: 0 };
+            }
+            
+            appState.clubStats[club].shots.push(distance);
+            appState.clubStats[club].total += distance;
+            
+            if (distance > appState.clubStats[club].best) {
+                appState.clubStats[club].best = distance;
+            }
+            
+            // Update accuracy feedback
+            const target = clubData[club].distance;
+            const diff = Math.abs(distance - target);
+            let feedback = '';
+            
+            if (diff <= 5) feedback = '🎯 Perfect! Right on target';
+            else if (diff <= 10) feedback = '✅ Great shot! Very close';
+            else if (diff <= 20) feedback = '👍 Good shot! Close to target';
+            else feedback = '⚠️ Keep practicing - ' + (distance > target ? 'too long' : 'too short');
+            
+            document.getElementById('accuracyFeedback').textContent = feedback;
+            updateClubStats();
+        }
+
+        function updateCourseProgress(distance) {
+            const course = courses[appState.selectedCourse];
+            const hole = course.holes[appState.currentHole - 1];
+            
+            // Add stroke
+            appState.courseStrokes[appState.currentHole - 1]++;
+            
+            // Update ball position (simplified)
+            const progress = Math.min(distance / hole.distance, 1);
+            const ballElement = document.getElementById('courseBallPosition');
+            if (ballElement) {
+                const newPosition = Math.min(progress * 85 + 5, 90);
+                ballElement.style.left = newPosition + '%';
+                
+                // Check if ball reached the green (90%+ of hole distance)
+                if (progress >= 0.9) {
+                    setTimeout(() => {
+                        showPuttingInterface(hole, distance);
+                    }, 2000); // Show after shot analysis
+                }
+            }
+        }
+
+        function showPuttingInterface(hole, approachDistance) {
+            // Calculate distance to pin (random based on approach shot accuracy)
+            const maxPinDistance = Math.max(3, Math.min(35, (hole.distance - approachDistance) * 0.1 + Math.random() * 15));
+            const pinDistance = Math.round(maxPinDistance);
+            
+            // Determine slope difficulty based on hole characteristics
+            let slopeDifficulty = 1;
+            if (hole.par === 3) slopeDifficulty = Math.random() < 0.6 ? 2 : 3; // Par 3s often have tricky greens
+            else if (hole.par === 5) slopeDifficulty = Math.random() < 0.5 ? 1 : 2; // Par 5s usually easier pins
+            else slopeDifficulty = Math.floor(Math.random() * 3) + 1; // Par 4s random
+            
+            // Update putting interface
+            document.getElementById('pinDistance').textContent = pinDistance + ' feet';
+            
+            // Update slope indicators
+            document.querySelectorAll('.slope-dot').forEach(dot => dot.classList.remove('active'));
+            document.getElementById(`slope${slopeDifficulty}`).classList.add('active');
+            
+            // Update slope description
+            const slopeDescriptions = {
+                1: "Straight putt, minimal break",
+                2: "Moderate break, manageable slope", 
+                3: "Severe break, tricky read required"
+            };
+            document.getElementById('slopeDescription').textContent = slopeDescriptions[slopeDifficulty];
+            
+            // Store putting data
+            appState.currentPutt = {
+                distance: pinDistance,
+                difficulty: slopeDifficulty,
+                hole: appState.currentHole
+            };
+            
+            // Show interface
+            document.getElementById('puttingInterface').classList.add('show');
+        }
+
+        function selectPuttResult(putts) {
+            if (!appState.currentPutt) return;
+            
+            // Add putts to current hole stroke count
+            appState.courseStrokes[appState.currentHole - 1] += putts;
+            
+            const totalStrokes = appState.courseStrokes[appState.currentHole - 1];
+            const hole = courses[appState.selectedCourse].holes[appState.currentHole - 1];
+            const scoreToPar = totalStrokes - hole.par;
+            
+            // Create score description
+            let scoreText = `${totalStrokes} strokes`;
+            if (scoreToPar === -3) scoreText += " - Albatross! 🦅🦅";
+            else if (scoreToPar === -2) scoreText += " - Eagle! 🦅";
+            else if (scoreToPar === -1) scoreText += " - Birdie! 🐦";
+            else if (scoreToPar === 0) scoreText += " - Par ✅";
+            else if (scoreToPar === 1) scoreText += " - Bogey ⚠️";
+            else if (scoreToPar === 2) scoreText += " - Double Bogey 😬";
+            else if (scoreToPar >= 3) scoreText += " - Triple+ 💥";
+            
+            // Show completion message
+            const puttText = putts === 1 ? "Nice putting! One putt to finish." : "Two putts to finish.";
+            alert(`Hole ${appState.currentHole} Complete!\n\n${puttText}\nTotal: ${scoreText}`);
+            
+            // Hide putting interface
+            document.getElementById('puttingInterface').classList.remove('show');
+            
+            // Reset ball position for next hole
+            const ballElement = document.getElementById('courseBallPosition');
+            if (ballElement) {
+                ballElement.style.left = '5%';
+            }
+            
+            // Clear current putt data
+            appState.currentPutt = null;
+            
+            // Auto advance to next hole after short delay
+            setTimeout(() => {
+                nextCourseHole();
+            }, 1500);
+        }
+
+        function closePuttingInterface() {
+            document.getElementById('puttingInterface').classList.remove('show');
+            appState.currentPutt = null;
+        }
+
+        function generateShotMetrics() {
+            // Base metrics from ball tracking
+            const baseSpeed = shotData.speed || (80 + Math.random() * 40);
+            const baseAngle = shotData.angle || (8 + Math.random() * 16);
+            const baseDistance = shotData.distance || (150 + Math.random() * 150);
+            
+            // Calculate realistic swing metrics
+            const clubSpeed = Math.round(baseSpeed * 0.7 + Math.random() * 10);
+            const ballSpeed = Math.round(baseSpeed);
+            const smashFactor = (ballSpeed / clubSpeed).toFixed(2);
+            
+            const launchAngle = Math.round(baseAngle);
+            const carryDistance = Math.round(baseDistance);
+            const totalDistance = Math.round(carryDistance + 15 + Math.random() * 25);
+            const carryTime = (baseDistance / 50 + Math.random() * 2).toFixed(1);
+            
+            // Spin calculations
+            const backspin = Math.round(2000 + Math.random() * 2000);
+            const sidespin = Math.round((Math.random() - 0.5) * 800);
+            const spinRate = Math.round(Math.sqrt(backspin * backspin + sidespin * sidespin));
+            const spinAxis = (Math.atan2(sidespin, backspin) * 180 / Math.PI).toFixed(1);
+            
+            // Advanced metrics
+            const peakHeight = Math.round(15 + launchAngle * 2 + Math.random() * 10);
+            const apexTime = (carryTime * 0.6).toFixed(1);
+            const descentAngle = Math.round(-30 - Math.random() * 20);
+            
+            const attackAngle = (Math.random() * 6 - 3).toFixed(1);
+            const clubPathValue = (Math.random() * 4 - 2).toFixed(1);
+            const clubPath = Math.abs(clubPathValue) + '° ' + (clubPathValue > 0 ? 'in' : 'out');
+            const faceAngleValue = (Math.random() * 3 - 1.5).toFixed(1);
+            const faceAngle = Math.abs(faceAngleValue) + '° ' + (faceAngleValue > 0 ? 'open' : 'closed');
+            
+            return {
+                clubSpeed, ballSpeed, smashFactor, launchAngle, carryDistance, 
+                totalDistance, carryTime, backspin, sidespin, spinRate, spinAxis,
+                peakHeight, apexTime, descentAngle, attackAngle, clubPath, faceAngle
+            };
+        }
+
+        function updateSpinVisualization(backspin, sidespin) {
+            const backspinArrow = document.getElementById('backspinArrow');
+            const sidespinArrow = document.getElementById('sidespinArrow');
+            
+            // Update backspin arrow
+            if (backspin > 1000) {
+                backspinArrow.style.display = 'block';
+                backspinArrow.textContent = '↑';
+                backspinArrow.style.animationDuration = Math.max(0.5, 3 - backspin/1000) + 's';
+            } else {
+                backspinArrow.style.display = 'none';
+            }
+            
+            // Update sidespin arrow
+            if (Math.abs(sidespin) > 50) {
+                sidespinArrow.style.display = 'block';
+                sidespinArrow.textContent = sidespin > 0 ? '↻' : '↺';
+                sidespinArrow.style.animationDuration = Math.max(0.5, 3 - Math.abs(sidespin)/200) + 's';
+            } else {
+                sidespinArrow.style.display = 'none';
+            }
+        }
+
+        function drawBallPath(metrics) {
+            const canvas = document.getElementById('pathCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = canvas.offsetWidth * 2; // High DPI
+            canvas.height = canvas.offsetHeight * 2;
+            ctx.scale(2, 2);
+            
+            const width = canvas.offsetWidth;
+            const height = canvas.offsetHeight;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw ground line
+            ctx.strokeStyle = '#4a4a4a';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, height - 20);
+            ctx.lineTo(width, height - 20);
+            ctx.stroke();
+            
+            // Draw ball trajectory
+            ctx.strokeStyle = '#ff4444';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            const points = 50;
+            const maxHeight = height - 40;
+            
+            for (let i = 0; i <= points; i++) {
+                const t = i / points;
+                const x = t * width;
+                
+                // Parabolic trajectory
+                const peakT = 0.4; // Peak at 40% of flight
+                let y;
+                if (t <= peakT) {
+                    y = height - 20 - (t / peakT) * maxHeight * 0.6;
+                } else {
+                    const descendT = (t - peakT) / (1 - peakT);
+                    y = height - 20 - (1 - descendT) * maxHeight * 0.6;
+                }
+                
+                // Add some curve based on sidespin
+                const curve = Math.sin(t * Math.PI) * (metrics.sidespin / 1000) * 20;
+                y += curve;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.stroke();
+            
+            // Draw ball positions
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i <= points; i += 5) {
+                const t = i / points;
+                const x = t * width;
+                
+                let y;
+                if (t <= 0.4) {
+                    y = height - 20 - (t / 0.4) * maxHeight * 0.6;
+                } else {
+                    const descendT = (t - 0.4) / 0.6;
+                    y = height - 20 - (1 - descendT) * maxHeight * 0.6;
+                }
+                
+                const curve = Math.sin(t * Math.PI) * (metrics.sidespin / 1000) * 20;
+                y += curve;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+            
+            // Draw peak marker
+            const peakX = width * 0.4;
+            const peakY = height - 20 - maxHeight * 0.6;
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath();
+            ctx.arc(peakX, peakY, 4, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw distance markers
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px -apple-system';
+            ctx.textAlign = 'center';
+            ctx.fillText('Peak: ' + metrics.peakHeight + 'ft', peakX, peakY - 15);
+            ctx.fillText('Carry: ' + metrics.carryDistance + 'yds', width - 50, height - 5);
+        }
+
+        function closeShotAnalysis() {
+            const analysis = document.getElementById('shotAnalysis');
+            analysis.classList.remove('show');
+        }
+
+        function addToShotHistory() {
+            const shot = {
+                timestamp: new Date().toLocaleTimeString(),
+                clubSpeed: document.getElementById('clubSpeedMetric').textContent,
+                ballSpeed: document.getElementById('ballSpeedMetric').textContent,
+                distance: document.getElementById('carryDistanceMetric').textContent,
+                spin: document.getElementById('spinRateMetric').textContent
+            };
+
+            appState.shotHistory.unshift(shot);
+            appState.shotHistory = appState.shotHistory.slice(0, 10); // Keep last 10 shots
+
+            updateShotHistoryDisplay();
+        }
+
+        function updateShotHistoryDisplay() {
+            const container = document.getElementById('shotHistoryList');
+            
+            if (appState.shotHistory.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; opacity: 0.6; padding: 20px;">
+                        No shots recorded yet
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = appState.shotHistory.map(shot => `
+                <div class="shot-entry">
+                    <span>${shot.timestamp}</span>
+                    <span>${shot.ballSpeed} | ${shot.distance} | ${shot.spin}</span>
+                </div>
+            `).join('');
+        }
+
+        function resetShotData() {
+            shotData = {
+                positions: [],
+                timestamps: [],
+                speed: 0,
+                angle: 0,
+                distance: 0,
+                carryTime: 0
+            };
+            shotStartTime = null;
+            appState.ballTrail = [];
+        }
+
+        function captureShot() {
+            if (!appState.isTracking) {
+                alert('Start ball tracking first');
+                return;
+            }
+
+            // Simulate a shot capture
+            setTimeout(() => {
+                simulateBallDetection();
+            }, 100);
+        }
+
+        function setTrackingZone() {
+            // Default tracking zone in center of screen
+            appState.trackingZone = {
+                x: appState.canvas.width * 0.2,
+                y: appState.canvas.height * 0.3,
+                width: appState.canvas.width * 0.6,
+                height: appState.canvas.height * 0.4
+            };
+            alert('Tracking zone set to center area');
+        }
+
+        function calibrateBallSize() {
+            const size = prompt('Enter ball size in pixels (default: 10):', '10');
+            if (size && !isNaN(size)) {
+                appState.ballSize = parseInt(size);
+                alert(`Ball size set to ${size} pixels`);
+            }
+        }
+
+        function resetCalibration() {
+            appState.ballSize = 10;
+            appState.trackingZone = {x: 0, y: 0, width: 0, height: 0};
+            alert('Calibration reset to defaults');
+        }
+
+        function updateStatus(text, active) {
+            document.getElementById('statusText').textContent = text;
+            document.getElementById('statusDot').classList.toggle('active', active);
+        }
+
+        // Update distance setting
+        document.getElementById('distanceInput').addEventListener('change', function(e) {
+            appState.distanceToNet = parseInt(e.target.value) || 10;
+        });
+
+        // Initialize app
+        window.addEventListener('load', function() {
+            updateStatus('Ready to start camera', false);
+        });
+
+        // Prevent scrolling
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+    </script>
+</body>
+</html>
