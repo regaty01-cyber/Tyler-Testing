@@ -16,10 +16,9 @@
             background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
             color: white;
             overflow-x: hidden;
-            -webkit-user-select: none;
-            user-select: none;
             min-height: 100vh;
             -webkit-overflow-scrolling: touch;
+            position: relative;
         }
 
         .container {
@@ -27,8 +26,15 @@
             min-height: 100vh;
             padding: 10px;
             position: relative;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            overflow-y: visible;
+        }
+
+        .mode-section {
+            display: none;
+        }
+
+        .mode-section.active {
+            display: block;
         }
 
         .header {
@@ -832,6 +838,39 @@
                     <li>Clear background behind ball flight path</li>
                     <li>Calibrate distance for accurate measurements</li>
                 </ul>
+            </div>
+
+            <div class="camera-section">
+                <div class="video-container">
+                    <video id="videoStream" autoplay playsinline muted></video>
+                    <canvas id="canvas"></canvas>
+                    <div class="camera-placeholder" id="cameraPlaceholder">
+                        📹
+                        <p style="font-size: 16px; margin-top: 10px;">Camera will appear here</p>
+                    </div>
+                    <div class="tracking-zone" id="trackingZone"></div>
+                </div>
+                
+                <div class="camera-controls">
+                    <button class="camera-btn" id="startCamera" onclick="startCamera()">
+                        Start Camera
+                    </button>
+                    <button class="camera-btn" id="trackingBtn" onclick="toggleTracking()" disabled>
+                        Start Tracking
+                    </button>
+                    <button class="camera-btn" onclick="captureShot()" disabled id="captureBtn">
+                        Capture Shot
+                    </button>
+                </div>
+            </div>
+
+            <div class="shot-history">
+                <h3>📈 Shot History</h3>
+                <div id="shotHistoryList">
+                    <div style="text-align: center; opacity: 0.6; padding: 20px;">
+                        No shots recorded yet
+                    </div>
+                </div>
             </div>
         </div>
 
