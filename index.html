@@ -2,1576 +2,1302 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Garage Golf Simulator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ProVision Golf - iPhone Golf Simulator</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        html, body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
-            color: white;
-            overflow-x: hidden;
-            height: auto;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
-            padding: 10px;
-            min-height: 100vh;
-        }
-
-        .header {
-            text-align: center;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        .header h1 {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .mode-selector {
-            display: flex;
-            gap: 8px;
-            margin: 15px 0;
-        }
-
-        .mode-btn {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: none;
-            padding: 12px 8px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .mode-btn.active {
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-        }
-
-        .mode-section {
-            display: none;
-        }
-
-        .mode-section.active {
-            display: block;
-        }
-
-        .camera-section {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 15px 0;
-        }
-
-        .video-container {
-            position: relative;
-            width: 100%;
-            height: 250px;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
             background: #000;
-            border-radius: 15px;
+            color: #fff;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            height: 100vh;
+            position: fixed;
+            width: 100%;
         }
 
-        #videoStream {
+        /* Main Game Container */
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 50%, #7EC850 100%);
+        }
+
+        /* 3D Canvas */
+        #gameCanvas {
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            border-radius: 15px;
+            display: block;
+            touch-action: none;
         }
 
-        .camera-placeholder {
+        /* Camera Setup Screen */
+        .camera-setup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100%;
-            font-size: 48px;
-            opacity: 0.5;
-        }
-
-        .camera-controls {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-
-        .camera-btn {
-            flex: 1;
-            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 120px;
-        }
-
-        .camera-btn.active {
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-        }
-
-        .camera-btn:disabled {
-            background: #666;
-            cursor: not-allowed;
-        }
-
-        .club-selector {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-            gap: 8px;
-            margin: 15px 0;
-        }
-
-        .club-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: none;
-            padding: 12px 6px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .club-btn.selected {
-            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
-        }
-
-        .distance-target {
-            background: linear-gradient(45deg, #2d5a27, #4a7c59);
-            border-radius: 15px;
+            z-index: 1000;
             padding: 20px;
-            margin: 15px 0;
+        }
+
+        .setup-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 20px;
             text-align: center;
-        }
-
-        .target-distance {
-            font-size: 32px;
-            font-weight: bold;
-            color: #90EE90;
-            margin-bottom: 10px;
-        }
-
-        .club-stats {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 15px 0;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stat-row:last-child {
-            border-bottom: none;
-        }
-
-        .course-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .course-card {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            padding: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .course-card.selected {
-            background: linear-gradient(45deg, #2196F3, #21CBF3);
-        }
-
-        .course-name {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .course-info {
-            font-size: 12px;
-            opacity: 0.8;
         }
 
         .setup-instructions {
-            background: rgba(255, 193, 7, 0.2);
-            border: 2px solid #FFC107;
-            border-radius: 15px;
-            padding: 15px;
-            margin: 15px 0;
-        }
-
-        .setup-instructions h3 {
-            color: #FFC107;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .setup-instructions ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .setup-instructions li {
-            padding: 5px 0;
-            padding-left: 20px;
-            position: relative;
-        }
-
-        .setup-instructions li::before {
-            content: '✓';
-            position: absolute;
-            left: 0;
-            color: #4CAF50;
-            font-weight: bold;
-        }
-
-        .shot-history {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255,255,255,0.1);
             border-radius: 15px;
             padding: 20px;
-            margin: 15px 0;
+            margin-bottom: 30px;
+            max-width: 350px;
         }
 
-        .shot-entry {
+        .instruction-item {
             display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            align-items: center;
+            margin-bottom: 15px;
             font-size: 14px;
         }
 
-        .shot-entry:last-child {
-            border-bottom: none;
-        }
-
-        .status-indicator {
+        .instruction-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            border-radius: 10px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            margin: 15px 0;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 20px;
         }
 
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #ff4444;
-            animation: pulse 2s infinite;
+        .calibrate-btn {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            border: none;
+            padding: 18px 60px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(76,175,80,0.3);
         }
 
-        .status-dot.active {
-            background: #44ff44;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        /* Mobile optimization */
-        .immersive-environment {
+        /* HUD Overlay */
+        .hud-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            display: none;
-            z-index: 999;
-            overflow: hidden;
+            pointer-events: none;
+            z-index: 100;
         }
 
-        .immersive-environment.show {
-            display: block;
-        }
-
-        .range-environment {
-            background: linear-gradient(to bottom, 
-                #87CEEB 0%,     /* Sky blue */
-                #B0E0E6 20%,    /* Light blue */
-                #98FB98 40%,    /* Light green */
-                #90EE90 60%,    /* Lighter green */
-                #228B22 80%,    /* Forest green */
-                #006400 100%   /* Dark green */
-            );
-        }
-
-        .course-environment {
-            background: linear-gradient(to bottom, 
-                #4169E1 0%,     /* Royal blue sky */
-                #87CEEB 30%,    /* Sky blue */
-                #228B22 70%,    /* Forest green */
-                #006400 100%   /* Dark green */
-            );
-        }
-
-        .environment-hud {
+        /* Top Bar */
+        .top-bar {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.8);
-            color: white;
+            top: 0;
+            left: 0;
+            right: 0;
             padding: 15px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            z-index: 1002;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+            pointer-events: auto;
         }
 
-        .hud-top {
+        .top-bar-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
         }
 
-        .hud-metrics {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 10px;
-            font-size: 11px;
-            margin-top: 10px;
-        }
-
-        .hud-metric {
-            text-align: center;
-            background: rgba(255,255,255,0.1);
-            padding: 8px;
-            border-radius: 8px;
-        }
-
-        .hud-metric strong {
-            display: block;
-            font-size: 14px;
-            color: #90EE90;
-            margin-bottom: 2px;
-        }
-
-        .range-targets {
-            position: absolute;
-            bottom: 40%;
-            left: 0;
-            right: 0;
-            height: 20px;
-            z-index: 1001;
-        }
-
-        .range-flag {
-            position: absolute;
-            bottom: 0;
-            width: 30px;
-            height: 20px;
-            text-align: center;
-            font-size: 10px;
-            color: white;
-            font-weight: bold;
-            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .tee-box-view {
-            position: absolute;
-            bottom: 10%;
-            left: 10%;
-            right: 10%;
-            height: 15%;
-            background: linear-gradient(to right, #8B4513 0%, #D2691E 50%, #8B4513 100%);
-            border-radius: 10px;
-            border: 2px solid #654321;
-            z-index: 1001;
-        }
-
-        .tee-markers {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            gap: 15px;
-        }
-
-        .tee-marker {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-
-        .tee-marker.blue { background: #0066CC; }
-        .tee-marker.white { background: #FFFFFF; }
-        .tee-marker.red { background: #CC0000; }
-
-        .course-features {
-            position: absolute;
-            bottom: 30%;
-            left: 0;
-            right: 0;
-            height: 40%;
-            z-index: 1000;
-        }
-
-        .fairway {
-            position: absolute;
-            bottom: 0;
-            left: 20%;
-            right: 20%;
-            height: 60%;
-            background: linear-gradient(to top, #228B22, #90EE90);
-            border-radius: 50px 50px 0 0;
-        }
-
-        .rough-left, .rough-right {
-            position: absolute;
-            bottom: 0;
-            width: 25%;
-            height: 40%;
-            background: linear-gradient(to top, #556B2F, #6B8E23);
-            border-radius: 20px 20px 0 0;
-        }
-
-        .rough-left { left: 0; }
-        .rough-right { right: 0; }
-
-        .green {
-            position: absolute;
-            bottom: 0;
-            right: 15%;
-            width: 15%;
-            height: 25%;
-            background: radial-gradient(circle, #90EE90, #228B22);
-            border-radius: 50%;
-            border: 2px solid #006400;
-        }
-
-        .pin {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 2px;
-            height: 15px;
-            background: #FF0000;
-        }
-
-        .pin::after {
-            content: '🚩';
-            position: absolute;
-            top: -15px;
-            left: -8px;
-            font-size: 12px;
-        }
-
-        .water-hazard {
-            position: absolute;
-            bottom: 20%;
-            left: 40%;
-            width: 30%;
-            height: 15%;
-            background: linear-gradient(45deg, #4169E1, #1E90FF);
+        .hole-info {
+            background: rgba(0,0,0,0.5);
+            padding: 10px 15px;
             border-radius: 20px;
-            animation: water-shimmer 3s ease-in-out infinite;
-        }
-
-        @keyframes water-shimmer {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 1; }
-        }
-
-        .trees {
-            position: absolute;
-            bottom: 25%;
-            left: 5%;
-            right: 5%;
-            height: 30%;
-            z-index: 998;
-        }
-
-        .tree {
-            position: absolute;
-            font-size: 20px;
-            color: #006400;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .environment-controls {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 1002;
-        }
-
-        .env-btn {
-            flex: 1;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: bold;
             backdrop-filter: blur(10px);
         }
 
-        .env-btn:hover {
-            background: rgba(255,255,255,0.3);
+        .hole-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 3px;
         }
 
-        .shot-tracer {
+        .hole-details {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .wind-indicator {
+            background: rgba(0,0,0,0.5);
+            padding: 10px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .wind-arrow {
+            width: 30px;
+            height: 30px;
+            position: relative;
+        }
+
+        .wind-arrow::before {
+            content: '➤';
             position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #FFD700;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #FFD700;
-            z-index: 1001;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(var(--wind-dir, 0deg));
+            font-size: 20px;
+            color: #4CAF50;
         }
 
-        @keyframes splash {
-            0% {
-                transform: scale(1);
-                opacity: 1;
+        /* Club Selector */
+        .club-selector {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .club-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .club-btn.selected {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            border-color: white;
+        }
+
+        .club-icon {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        /* Swing Controls */
+        .swing-area {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            pointer-events: auto;
+        }
+
+        .swing-button {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FF5722, #D84315);
+            border-radius: 50%;
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255,87,34,0.5);
+            transition: all 0.3s ease;
+        }
+
+        .swing-button:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        .swing-button.ready {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            box-shadow: 0 5px 20px rgba(76,175,80,0.5);
+        }
+
+        /* Motion Capture Indicator */
+        .motion-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border: 3px solid #4CAF50;
+            border-radius: 50%;
+            display: none;
+            pointer-events: none;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+
+        .motion-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            font-weight: 600;
+            color: #4CAF50;
+            text-align: center;
+        }
+
+        /* Shot Data Display */
+        .shot-data {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            min-width: 150px;
+            display: none;
+            pointer-events: auto;
+        }
+
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .data-label {
+            opacity: 0.7;
+        }
+
+        .data-value {
+            font-weight: 600;
+            color: #4CAF50;
+        }
+
+        /* Distance to Pin */
+        .distance-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .distance-number {
+            font-size: 72px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+            line-height: 1;
+        }
+
+        .distance-unit {
+            font-size: 18px;
+            opacity: 0.8;
+        }
+
+        /* Aiming Guide */
+        .aim-guide {
+            position: absolute;
+            bottom: 180px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #4CAF50, transparent);
+            pointer-events: none;
+            transition: transform 0.1s ease;
+        }
+
+        .aim-dot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: #4CAF50;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #4CAF50;
+        }
+
+        /* Power Meter */
+        .power-meter {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 8px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            display: none;
+            pointer-events: none;
+        }
+
+        .power-fill {
+            height: 100%;
+            background: linear-gradient(to right, #4CAF50, #8BC34A, #FFEB3B, #FF9800, #FF5722);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        /* Shot Result */
+        .shot-result {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            pointer-events: auto;
+            min-width: 300px;
+        }
+
+        .result-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .result-distance {
+            font-size: 48px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .result-details {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .result-btn {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Gyroscope Permission */
+        .permission-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .permission-content {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 350px;
+        }
+
+        .permission-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .permission-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .permission-text {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        /* Landscape Mode Indicator */
+        .rotate-device {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+
+        .rotate-icon {
+            font-size: 60px;
+            animation: rotate 2s infinite;
+        }
+
+        @keyframes rotate {
+            0%, 100% { transform: rotate(-90deg); }
+            50% { transform: rotate(0deg); }
+        }
+
+        .rotate-text {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        /* Mini Map */
+        .mini-map {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            width: 120px;
+            height: 120px;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid rgba(76,175,80,0.5);
+            border-radius: 15px;
+            padding: 10px;
+            pointer-events: auto;
+        }
+
+        .map-canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        /* Score Card */
+        .scorecard {
+            position: absolute;
+            bottom: 200px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            display: none;
+            pointer-events: auto;
+        }
+
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+            min-width: 120px;
+        }
+
+        .score-label {
+            opacity: 0.7;
+        }
+
+        .score-value {
+            font-weight: 600;
+        }
+
+        /* Responsive adjustments */
+        @media screen and (orientation: portrait) {
+            .rotate-device {
+                display: flex;
+                flex-direction: column;
             }
-            100% {
-                transform: scale(3);
-                opacity: 0;
+        }
+
+        @media screen and (max-height: 400px) {
+            .top-bar {
+                padding: 10px;
+            }
+            
+            .club-selector {
+                bottom: 70px;
+            }
+            
+            .swing-area {
+                height: 60px;
+            }
+            
+            .swing-button {
+                width: 60px;
+                height: 60px;
+                bottom: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🏌️ Garage Golf Simulator</h1>
-            <p>Real Ball Flight Tracking</p>
-            
-            <div class="mode-selector">
-                <button class="mode-btn active" id="practiceMode" onclick="switchMode('practice')">
-                    📹 Practice
-                </button>
-                <button class="mode-btn" id="drivingRangeMode" onclick="switchMode('range')">
-                    🎯 Range
-                </button>
-                <button class="mode-btn" id="coursePlayMode" onclick="switchMode('course')">
-                    ⛳ Course
-                </button>
+    <!-- Main Game Container -->
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <!-- Camera Setup Screen -->
+    <div id="cameraSetup" class="camera-setup">
+        <div class="setup-title">📱 iPhone Golf Simulator</div>
+        <div class="setup-instructions">
+            <div class="instruction-item">
+                <div class="instruction-icon">📱</div>
+                <div>Place phone against your body or in pocket during swing</div>
+            </div>
+            <div class="instruction-item">
+                <div class="instruction-icon">🏌️</div>
+                <div>Make your normal golf swing motion</div>
+            </div>
+            <div class="instruction-item">
+                <div class="instruction-icon">📊</div>
+                <div>AI analyzes motion for realistic ball flight</div>
             </div>
         </div>
+        <button class="calibrate-btn" onclick="startGame()">START SIMULATOR</button>
+    </div>
 
-        <!-- Practice Mode -->
-        <div id="practiceModeSection" class="mode-section active">
-            <div class="setup-instructions">
-                <h3>📋 Setup Instructions</h3>
-                <ul>
-                    <li>Place iPhone 6-10 feet from hitting area</li>
-                    <li>Ensure good lighting in your garage</li>
-                    <li>Use white golf balls for better tracking</li>
-                    <li>Clear background behind ball flight path</li>
-                    <li>Calibrate distance for accurate measurements</li>
-                </ul>
-            </div>
-
-            <div class="camera-section">
-                <div class="video-container">
-                    <video id="videoStream" autoplay playsinline muted></video>
-                    <canvas id="canvas"></canvas>
-                    <div class="camera-placeholder" id="cameraPlaceholder">
-                        📹
-                        <p style="font-size: 16px; margin-top: 10px;">Camera will appear here</p>
-                    </div>
+    <!-- HUD Overlay -->
+    <div class="hud-overlay">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-content">
+                <div class="hole-info">
+                    <div class="hole-name">Hole 1 • Par 4</div>
+                    <div class="hole-details">Blue Ridge Valley</div>
                 </div>
-                
-                <div class="camera-controls">
-                    <button class="camera-btn" id="startCamera" onclick="startCamera()">
-                        Start Camera
-                    </button>
-                    <button class="camera-btn" id="trackingBtn" onclick="toggleTracking()" disabled>
-                        Start Tracking
-                    </button>
-                    <button class="camera-btn" onclick="captureShot()" disabled id="captureBtn">
-                        Capture Shot
-                    </button>
-                </div>
-            </div>
-
-            <div class="status-indicator">
-                <div class="status-dot" id="statusDot"></div>
-                <span id="statusText">Ready to start camera</span>
-            </div>
-
-            <div class="shot-history">
-                <h3>📈 Recent Shots</h3>
-                <div id="shotHistoryList">
-                    <div style="text-align: center; opacity: 0.6; padding: 20px;">
-                        No shots recorded yet
+                <div class="wind-indicator">
+                    <div class="wind-arrow" style="--wind-dir: 45deg;"></div>
+                    <div>
+                        <div style="font-weight: 600;">8 mph</div>
+                        <div style="font-size: 10px;">NE</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Driving Range Mode -->
-        <div id="drivingRangeModeSection" class="mode-section">
-            <h3>🎯 Driving Range Practice</h3>
-            <p>Perfect your distances with each club</p>
-            
-            <div class="club-selector">
-                <button class="club-btn selected" onclick="selectClub('Driver')">Driver</button>
-                <button class="club-btn" onclick="selectClub('3W')">3-Wood</button>
-                <button class="club-btn" onclick="selectClub('5W')">5-Wood</button>
-                <button class="club-btn" onclick="selectClub('5I')">5-Iron</button>
-                <button class="club-btn" onclick="selectClub('6I')">6-Iron</button>
-                <button class="club-btn" onclick="selectClub('7I')">7-Iron</button>
-                <button class="club-btn" onclick="selectClub('8I')">8-Iron</button>
-                <button class="club-btn" onclick="selectClub('9I')">9-Iron</button>
-                <button class="club-btn" onclick="selectClub('PW')">PW</button>
-                <button class="club-btn" onclick="selectClub('SW')">SW</button>
-            </div>
+        <!-- Distance Display -->
+        <div class="distance-display">
+            <div class="distance-number" id="distanceToPin">425</div>
+            <div class="distance-unit">YARDS</div>
+        </div>
 
-            <div class="distance-target">
-                <div class="target-distance" id="targetDistance">250 yds</div>
-                <div>Target Distance - <span id="selectedClub">Driver</span></div>
-                <div id="accuracyFeedback">Hit a shot to see accuracy</div>
-            </div>
-
-            <div class="club-stats">
-                <h4>📊 <span id="clubStatsTitle">Driver</span> Statistics</h4>
-                <div class="stat-row">
-                    <span>Average Distance:</span>
-                    <span id="avgDistance">0 yds</span>
-                </div>
-                <div class="stat-row">
-                    <span>Best Shot:</span>
-                    <span id="bestShot">0 yds</span>
-                </div>
-                <div class="stat-row">
-                    <span>Shots Hit:</span>
-                    <span id="shotsHit">0</span>
-                </div>
-                <div class="stat-row">
-                    <span>Accuracy:</span>
-                    <span id="clubAccuracy">0%</span>
-                </div>
-            </div>
-
-            <button class="camera-btn" onclick="enterRangeEnvironment()" style="width: 100%; margin-top: 20px;">
-                🎯 Enter Driving Range
+        <!-- Club Selector -->
+        <div class="club-selector">
+            <button class="club-btn selected" onclick="selectClub('driver')">
+                <span class="club-icon">🏌️</span>
+                <span>DR</span>
+            </button>
+            <button class="club-btn" onclick="selectClub('3w')">
+                <span class="club-icon">🏑</span>
+                <span>3W</span>
+            </button>
+            <button class="club-btn" onclick="selectClub('5i')">
+                <span class="club-icon">⛳</span>
+                <span>5I</span>
+            </button>
+            <button class="club-btn" onclick="selectClub('7i')">
+                <span class="club-icon">🎯</span>
+                <span>7I</span>
+            </button>
+            <button class="club-btn" onclick="selectClub('pw')">
+                <span class="club-icon">📍</span>
+                <span>PW</span>
             </button>
         </div>
 
-        <!-- Course Play Mode -->
-        <div id="coursePlayModeSection" class="mode-section">
-            <h3>⛳ Play Golf Courses</h3>
-            
-            <div class="course-selector">
-                <div class="course-card selected" onclick="selectCourse('pebble')">
-                    <div class="course-name">Pebble Beach</div>
-                    <div class="course-info">Par 72 • 6,828 yds</div>
-                </div>
-                <div class="course-card" onclick="selectCourse('augusta')">
-                    <div class="course-name">Augusta National</div>
-                    <div class="course-info">Par 72 • 7,475 yds</div>
-                </div>
-                <div class="course-card" onclick="selectCourse('stAndrews')">
-                    <div class="course-name">St. Andrews</div>
-                    <div class="course-info">Par 72 • 7,279 yds</div>
-                </div>
-                <div class="course-card" onclick="selectCourse('torrey')">
-                    <div class="course-name">Torrey Pines</div>
-                    <div class="course-info">Par 72 • 7,698 yds</div>
-                </div>
-            </div>
-
-            <div id="courseHoleDisplay" style="display: none;">
-                <div class="distance-target">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <div>
-                            <div style="font-size: 20px; font-weight: bold;">Hole <span id="courseHoleNumber">1</span></div>
-                            <div id="courseHoleName" style="font-size: 14px; opacity: 0.8;">Ocean Views</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 24px; color: #90EE90; font-weight: bold;">
-                                <span id="courseHoleDistance">380</span> yds
-                            </div>
-                            <div>Par <span id="courseHolePar">4</span></div>
-                        </div>
-                    </div>
-                    
-                    <button class="camera-btn" onclick="enterCourseEnvironment()" style="width: 100%; margin-top: 15px;">
-                        🏌️ Play This Hole
-                    </button>
-                    
-                    <div style="display: flex; gap: 10px; margin-top: 15px;">
-                        <button class="club-btn" onclick="nextCourseHole()" style="flex: 1;">Next Hole</button>
-                        <button class="club-btn" onclick="viewScorecard()" style="flex: 1;">Scorecard</button>
-                    </div>
-                </div>
-            </div>
+        <!-- Aiming Guide -->
+        <div class="aim-guide" id="aimGuide">
+            <div class="aim-dot"></div>
         </div>
 
-        <!-- Shot Analysis (appears after any shot) -->
-        <div id="shotAnalysis" style="display: none; background: linear-gradient(45deg, #2196F3, #21CBF3); border-radius: 20px; padding: 20px; margin: 20px 0;">
-            <h3>🏌️ Shot Analysis</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
-                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; text-align: center;">
-                    <div style="font-size: 12px; opacity: 0.8;">Ball Speed</div>
-                    <div style="font-size: 20px; font-weight: bold; color: #90EE90;" id="ballSpeedResult">140 mph</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; text-align: center;">
-                    <div style="font-size: 12px; opacity: 0.8;">Distance</div>
-                    <div style="font-size: 20px; font-weight: bold; color: #90EE90;" id="distanceResult">245 yds</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; text-align: center;">
-                    <div style="font-size: 12px; opacity: 0.8;">Launch Angle</div>
-                    <div style="font-size: 20px; font-weight: bold; color: #90EE90;" id="launchAngleResult">12°</div>
-                </div>
-                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; text-align: center;">
-                    <div style="font-size: 12px; opacity: 0.8;">Spin Rate</div>
-                    <div style="font-size: 20px; font-weight: bold; color: #90EE90;" id="spinRateResult">2800 rpm</div>
-                </div>
-            </div>
-            <button onclick="closeAnalysis()" style="background: rgba(255,255,255,0.3); color: white; border: none; padding: 10px 20px; border-radius: 20px; margin-top: 20px; width: 100%;">
-                Close Analysis
+        <!-- Power Meter -->
+        <div class="power-meter" id="powerMeter">
+            <div class="power-fill" id="powerFill"></div>
+        </div>
+
+        <!-- Swing Controls -->
+        <div class="swing-area">
+            <button class="swing-button" id="swingButton" onclick="handleSwing()">
+                ⛳
             </button>
         </div>
 
-        <!-- Immersive Driving Range Environment -->
-        <div id="rangeEnvironment" class="immersive-environment range-environment">
-            <div class="environment-hud">
-                <div class="hud-top">
-                    <div>
-                        <strong>🎯 Driving Range</strong>
-                        <div style="font-size: 12px; opacity: 0.8;">Practice Facility</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 18px; font-weight: bold;" id="rangeClubDisplay">Driver</div>
-                        <div style="font-size: 12px;">Target: <span id="rangeTargetDisplay">250</span> yds</div>
-                    </div>
-                </div>
-                
-                <div class="hud-metrics">
-                    <div class="hud-metric">
-                        <strong id="rangeSpeedHUD">0</strong>
-                        <span>Ball Speed</span>
-                    </div>
-                    <div class="hud-metric">
-                        <strong id="rangeDistanceHUD">0</strong>
-                        <span>Carry</span>
-                    </div>
-                    <div class="hud-metric">
-                        <strong id="rangeAngleHUD">0°</strong>
-                        <span>Launch</span>
-                    </div>
-                    <div class="hud-metric">
-                        <strong id="rangeSpinHUD">0</strong>
-                        <span>Spin</span>
-                    </div>
-                </div>
+        <!-- Motion Indicator -->
+        <div class="motion-indicator" id="motionIndicator">
+            <div class="motion-text">TRACKING<br>SWING</div>
+        </div>
+
+        <!-- Shot Data -->
+        <div class="shot-data" id="shotData">
+            <div class="data-item">
+                <span class="data-label">Carry:</span>
+                <span class="data-value" id="carryDistance">0 yds</span>
             </div>
-
-            <!-- Range targets at different distances -->
-            <div class="range-targets">
-                <div class="range-flag" style="left: 30%;">100</div>
-                <div class="range-flag" style="left: 45%;">150</div>
-                <div class="range-flag" style="left: 60%;">200</div>
-                <div class="range-flag" style="left: 75%;">250</div>
-                <div class="range-flag" style="left: 85%;">300</div>
+            <div class="data-item">
+                <span class="data-label">Ball Speed:</span>
+                <span class="data-value" id="ballSpeed">0 mph</span>
             </div>
-
-            <!-- Range layout features -->
-            <div style="position: absolute; bottom: 15%; left: 0; right: 0; height: 30%; background: linear-gradient(to top, #228B22, #90EE90); border-radius: 20px 20px 0 0; z-index: 1000;"></div>
-
-            <!-- Tee area -->
-            <div style="position: absolute; bottom: 5%; left: 5%; right: 85%; height: 10%; background: #654321; border-radius: 10px; z-index: 1001;"></div>
-
-            <div class="flying-ball" id="rangeFlyingBall"></div>
-            <div class="ball-shadow" id="rangeBallShadow"></div>
-
-            <div class="environment-controls">
-                <button class="env-btn" onclick="takeRangeShot()">🏌️ Hit Shot</button>
-                <button class="env-btn" onclick="changeRangeClub()">⚡ Change Club</button>
-                <button class="env-btn" onclick="closeRangeEnvironment()">📱 Exit Range</button>
+            <div class="data-item">
+                <span class="data-label">Launch:</span>
+                <span class="data-value" id="launchAngle">0°</span>
+            </div>
+            <div class="data-item">
+                <span class="data-label">Spin:</span>
+                <span class="data-value" id="spinRate">0 rpm</span>
             </div>
         </div>
 
-        <!-- Immersive Course Environment -->
-        <div id="courseEnvironment" class="immersive-environment course-environment">
-            <div class="environment-hud">
-                <div class="hud-top">
-                    <div>
-                        <strong id="courseHoleTitle">Augusta Hole 1 - Tea Olive</strong>
-                        <div style="font-size: 12px; opacity: 0.8;" id="courseHoleDesc">Opening drive sets the tone</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 16px;">Par <span id="courseParHUD">4</span></div>
-                        <div style="font-size: 12px;"><span id="courseDistanceHUD">445</span> yards</div>
-                    </div>
-                </div>
-                
-                <div class="hud-metrics">
-                    <div class="hud-metric">
-                        <strong id="courseSpeedHUD">0</strong>
-                        <span>Ball Speed</span>
-                    </div>
-                    <div class="hud-metric">
-                        <strong id="courseDistanceHUD2">0</strong>
-                        <span>Carry</span>
-                    </div>
-                    <div class="hud-metric">
-                        <strong id="courseStrokesHUD">1</strong>
-                        <span>Strokes</span>
-                    </div>
-                    <div class="hud-metric">
-                        <strong id="courseScoreHUD">E</strong>
-                        <span>Score</span>
-                    </div>
-                </div>
+        <!-- Mini Map -->
+        <div class="mini-map">
+            <canvas class="map-canvas" id="miniMapCanvas"></canvas>
+        </div>
+
+        <!-- Score Card -->
+        <div class="scorecard" id="scoreCard">
+            <div class="score-row">
+                <span class="score-label">Strokes:</span>
+                <span class="score-value" id="strokeCount">0</span>
             </div>
-
-            <!-- Course features -->
-            <div class="course-features">
-                <div class="fairway"></div>
-                <div class="rough-left"></div>
-                <div class="rough-right"></div>
-                <div class="green">
-                    <div class="pin"></div>
-                </div>
-                <div class="water-hazard" id="waterHazard" style="display: none;"></div>
-            </div>
-
-            <!-- Trees for Augusta atmosphere -->
-            <div class="trees">
-                <div class="tree" style="left: 10%; bottom: 20%;">🌲</div>
-                <div class="tree" style="left: 15%; bottom: 35%;">🌳</div>
-                <div class="tree" style="left: 80%; bottom: 25%;">🌲</div>
-                <div class="tree" style="left: 85%; bottom: 40%;">🌳</div>
-                <div class="tree" style="left: 90%; bottom: 15%;">🌲</div>
-            </div>
-
-            <!-- Tee box for first shot -->
-            <div class="tee-box-view">
-                <div class="tee-markers">
-                    <div class="tee-marker blue"></div>
-                    <div class="tee-marker white"></div>
-                    <div class="tee-marker red"></div>
-                </div>
-            </div>
-
-            <div class="flying-ball" id="courseFlyingBall"></div>
-            <div class="ball-shadow" id="courseBallShadow"></div>
-            <div class="trajectory-line" id="courseTrajectoryLine"></div>
-
-            <div class="environment-controls">
-                <button class="env-btn" onclick="takeCourseShot()">🏌️ Hit Shot</button>
-                <button class="env-btn" onclick="changeCourseClub()">⚡ Change Club</button>
-                <button class="env-btn" onclick="closeCourseEnvironment()">📱 Exit Hole</button>
+            <div class="score-row">
+                <span class="score-label">Par:</span>
+                <span class="score-value">4</span>
             </div>
         </div>
-            <div style="background: linear-gradient(135deg, #2d5a27, #4a7c59); border-radius: 25px; padding: 30px; text-align: center; max-width: 90vw; border: 2px solid #90EE90;">
-                <div style="font-size: 48px; margin-bottom: 15px;">⛳</div>
-                <div style="font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #90EE90;">Ball on Green!</div>
-                
-                <div style="font-size: 32px; font-weight: bold; color: #FFD700; margin: 15px 0;" id="pinDistance">12 feet</div>
-                <div style="opacity: 0.8; margin-bottom: 20px;">to the pin</div>
-                
-                <div style="background: rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; margin: 20px 0;">
-                    <div style="font-size: 16px; margin-bottom: 15px;">Putt Difficulty</div>
-                    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
-                        <div style="width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,0.3);" id="slope1"></div>
-                        <div style="width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,0.3);" id="slope2"></div>
-                        <div style="width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,0.3);" id="slope3"></div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 12px; opacity: 0.8;">
-                        <span>Easy</span>
-                        <span>Medium</span>
-                        <span>Hard</span>
-                    </div>
-                    <div style="margin-top: 10px; font-size: 14px;" id="slopeDescription">Moderate break, uphill putt</div>
-                </div>
-                
-                <div style="margin-top: 25px;">
-                    <div style="font-size: 16px; margin-bottom: 20px; font-weight: bold;">Select Your Result</div>
-                    <div style="display: flex; gap: 15px; justify-content: center;">
-                        <button onclick="selectPuttResult(1)" style="background: linear-gradient(45deg, #4CAF50, #45a049); color: white; border: none; padding: 15px 25px; border-radius: 20px; font-size: 16px; font-weight: bold;">
-                            ⚡ One Putt
-                        </button>
-                        <button onclick="selectPuttResult(2)" style="background: linear-gradient(45deg, #FF9800, #F57C00); color: white; border: none; padding: 15px 25px; border-radius: 20px; font-size: 16px; font-weight: bold;">
-                            🎯 Two Putt
-                        </button>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px; padding: 15px; background: rgba(255,193,7,0.2); border-radius: 10px; font-size: 14px;">
-                    💡 Practice this putt on your putting green, then select your result
-                </div>
-            </div>
+
+        <!-- Shot Result -->
+        <div class="shot-result" id="shotResult">
+            <div class="result-title">GREAT SHOT!</div>
+            <div class="result-distance" id="resultDistance">250</div>
+            <div class="result-details" id="resultDetails">Perfect drive down the fairway</div>
+            <button class="result-btn" onclick="closeResult()">CONTINUE</button>
         </div>
     </div>
 
+    <!-- Permission Modal -->
+    <div class="permission-modal" id="permissionModal">
+        <div class="permission-content">
+            <div class="permission-icon">📱</div>
+            <div class="permission-title">Enable Motion Sensors</div>
+            <div class="permission-text">
+                This app uses your iPhone's gyroscope and accelerometer to track your golf swing for realistic shot simulation.
+            </div>
+            <button class="calibrate-btn" onclick="requestPermissions()">ENABLE</button>
+        </div>
+    </div>
+
+    <!-- Rotate Device Indicator -->
+    <div class="rotate-device" id="rotateDevice">
+        <div>
+            <div class="rotate-icon">📱</div>
+            <div class="rotate-text">Please rotate to landscape mode</div>
+        </div>
+    </div>
+
+    <!-- Three.js and Game Logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // App state
-        let appState = {
-            currentMode: 'practice',
-            selectedClub: 'Driver',
-            selectedCourse: 'pebble',
-            currentHole: 1,
-            courseStrokes: Array(18).fill(0),
-            clubStats: {},
-            shotHistory: [],
-            camera: null,
-            isTracking: false
+        // Global variables
+        let scene, camera, renderer;
+        let terrain, fairway, green, trees = [];
+        let golfBall, ballVelocity, ballSpin;
+        let currentClub = 'driver';
+        let strokeCount = 0;
+        let holeDistance = 425;
+        let distanceToPin = 425;
+        
+        // Motion tracking variables
+        let motionData = {
+            acceleration: { x: 0, y: 0, z: 0 },
+            rotation: { alpha: 0, beta: 0, gamma: 0 },
+            maxAcceleration: 0,
+            swingSpeed: 0
         };
 
         // Club data
-        const clubData = {
-            'Driver': { distance: 250 },
-            '3W': { distance: 230 },
-            '5W': { distance: 210 },
-            '5I': { distance: 170 },
-            '6I': { distance: 155 },
-            '7I': { distance: 140 },
-            '8I': { distance: 125 },
-            '9I': { distance: 110 },
-            'PW': { distance: 95 },
-            'SW': { distance: 80 }
+        const clubs = {
+            'driver': { distance: 250, launch: 10.5, spin: 2700, ballSpeed: 165 },
+            '3w': { distance: 225, launch: 12, spin: 3500, ballSpeed: 158 },
+            '5i': { distance: 180, launch: 15, spin: 5500, ballSpeed: 132 },
+            '7i': { distance: 160, launch: 18, spin: 7000, ballSpeed: 120 },
+            'pw': { distance: 130, launch: 24, spin: 9000, ballSpeed: 102 }
         };
 
-        // Course data
-        const courses = {
-            pebble: {
-                name: "Pebble Beach",
-                holes: [
-                    {name: "Ocean Views", par: 4, distance: 380},
-                    {name: "Coastal Breeze", par: 5, distance: 502},
-                    {name: "Cliff Edge", par: 4, distance: 390},
-                    {name: "Pine Valley", par: 3, distance: 188},
-                    {name: "Ocean Drive", par: 4, distance: 166},
-                    {name: "Monterey Bay", par: 5, distance: 513},
-                    {name: "Seal Point", par: 3, distance: 106},
-                    {name: "Carmel Gate", par: 4, distance: 418},
-                    {name: "Pacific Dunes", par: 4, distance: 464}
-                ]
-            },
-            augusta: {
-                name: "Augusta National",
-                holes: [
-                    {name: "Tea Olive", par: 4, distance: 445},
-                    {name: "Pink Dogwood", par: 5, distance: 575},
-                    {name: "Flowering Peach", par: 4, distance: 350},
-                    {name: "Flowering Crab Apple", par: 3, distance: 240},
-                    {name: "Magnolia", par: 4, distance: 495},
-                    {name: "Juniper", par: 3, distance: 180},
-                    {name: "Pampas", par: 4, distance: 450},
-                    {name: "Yellow Jasmine", par: 5, distance: 570},
-                    {name: "Carolina Cherry", par: 4, distance: 460}
-                ]
-            }
-        };
-
-        // Initialize app
-        function initializeApp() {
-            // Initialize club stats
-            Object.keys(clubData).forEach(club => {
-                appState.clubStats[club] = { shots: [], best: 0 };
+        // Initialize Three.js scene
+        function initScene() {
+            const canvas = document.getElementById('gameCanvas');
+            
+            // Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x87CEEB, 100, 800);
+            
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                60,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(0, 3, 8);
+            camera.lookAt(0, 0, -20);
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ 
+                canvas: canvas,
+                antialias: true,
+                alpha: true
             });
-            updateClubStats();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            sunLight.position.set(50, 50, 50);
+            sunLight.castShadow = true;
+            sunLight.shadow.camera.left = -100;
+            sunLight.shadow.camera.right = 100;
+            sunLight.shadow.camera.top = 100;
+            sunLight.shadow.camera.bottom = -100;
+            scene.add(sunLight);
+            
+            // Create course
+            createGolfCourse();
+            
+            // Create ball
+            createGolfBall();
+            
+            // Start render loop
+            animate();
         }
 
-        // Mode switching
-        function switchMode(mode) {
-            console.log('Switching to mode:', mode);
-            appState.currentMode = mode;
-            
-            // Update button states
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.classList.remove('active');
+        // Create realistic golf course
+        function createGolfCourse() {
+            // Terrain mesh with undulation
+            const terrainGeometry = new THREE.PlaneGeometry(300, 600, 50, 100);
+            const terrainMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x4a7c4a,
+                side: THREE.DoubleSide
             });
             
-            // Hide all sections
-            document.querySelectorAll('.mode-section').forEach(section => {
-                section.classList.remove('active');
-            });
+            // Add terrain undulation
+            const vertices = terrainGeometry.attributes.position.array;
+            for (let i = 0; i < vertices.length; i += 3) {
+                vertices[i + 2] = Math.sin(vertices[i] * 0.05) * Math.cos(vertices[i + 1] * 0.05) * 2;
+            }
+            terrainGeometry.computeVertexNormals();
             
-            // Show selected mode
-            if (mode === 'practice') {
-                document.getElementById('practiceMode').classList.add('active');
-                document.getElementById('practiceModeSection').classList.add('active');
-            } else if (mode === 'range') {
-                document.getElementById('drivingRangeMode').classList.add('active');
-                document.getElementById('drivingRangeModeSection').classList.add('active');
-                updateClubStats();
-            } else if (mode === 'course') {
-                document.getElementById('coursePlayMode').classList.add('active');
-                document.getElementById('coursePlayModeSection').classList.add('active');
+            terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
+            terrain.rotation.x = -Math.PI / 2;
+            terrain.receiveShadow = true;
+            scene.add(terrain);
+            
+            // Fairway
+            const fairwayGeometry = new THREE.PlaneGeometry(60, 400, 30, 60);
+            const fairwayMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x5d8c5d
+            });
+            fairway = new THREE.Mesh(fairwayGeometry, fairwayMaterial);
+            fairway.rotation.x = -Math.PI / 2;
+            fairway.position.y = 0.01;
+            fairway.position.z = -150;
+            fairway.receiveShadow = true;
+            scene.add(fairway);
+            
+            // Green
+            const greenGeometry = new THREE.CircleGeometry(20, 32);
+            const greenMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x7ec850
+            });
+            green = new THREE.Mesh(greenGeometry, greenMaterial);
+            green.rotation.x = -Math.PI / 2;
+            green.position.set(0, 0.02, -380);
+            green.receiveShadow = true;
+            scene.add(green);
+            
+            // Flag
+            const flagPoleGeometry = new THREE.CylinderGeometry(0.1, 0.1, 6);
+            const flagPoleMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const flagPole = new THREE.Mesh(flagPoleGeometry, flagPoleMaterial);
+            flagPole.position.set(0, 3, -380);
+            scene.add(flagPole);
+            
+            const flagGeometry = new THREE.PlaneGeometry(2, 1.5);
+            const flagMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xff0000,
+                side: THREE.DoubleSide
+            });
+            const flag = new THREE.Mesh(flagGeometry, flagMaterial);
+            flag.position.set(1, 5, -380);
+            scene.add(flag);
+            
+            // Trees
+            createTrees();
+            
+            // Bunkers
+            createBunkers();
+        }
+
+        // Create trees
+        function createTrees() {
+            const treePositions = [
+                { x: -50, z: -50 }, { x: 50, z: -50 },
+                { x: -60, z: -100 }, { x: 60, z: -100 },
+                { x: -55, z: -150 }, { x: 55, z: -150 },
+                { x: -65, z: -200 }, { x: 65, z: -200 },
+                { x: -50, z: -250 }, { x: 50, z: -250 },
+                { x: -70, z: -300 }, { x: 70, z: -300 },
+                { x: -45, z: -350 }, { x: 45, z: -350 }
+            ];
+            
+            treePositions.forEach(pos => {
+                // Trunk
+                const trunkGeometry = new THREE.CylinderGeometry(1.5, 2, 10);
+                const trunkMaterial = new THREE.MeshLambertMaterial({ color: 0x4a3c28 });
+                const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+                trunk.position.set(pos.x, 5, pos.z);
+                trunk.castShadow = true;
+                scene.add(trunk);
+                
+                // Foliage
+                const foliageGeometry = new THREE.ConeGeometry(8, 15, 8);
+                const foliageMaterial = new THREE.MeshLambertMaterial({ color: 0x2d5a2d });
+                const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+                foliage.position.set(pos.x, 15, pos.z);
+                foliage.castShadow = true;
+                scene.add(foliage);
+                
+                trees.push({ trunk, foliage });
+            });
+        }
+
+        // Create bunkers
+        function createBunkers() {
+            const bunkerPositions = [
+                { x: -25, z: -360 },
+                { x: 20, z: -370 }
+            ];
+            
+            bunkerPositions.forEach(pos => {
+                const bunkerGeometry = new THREE.SphereGeometry(10, 16, 8);
+                const bunkerMaterial = new THREE.MeshLambertMaterial({ 
+                    color: 0xC19A6B
+                });
+                const bunker = new THREE.Mesh(bunkerGeometry, bunkerMaterial);
+                bunker.position.set(pos.x, -1, pos.z);
+                bunker.scale.y = 0.3;
+                scene.add(bunker);
+            });
+        }
+
+        // Create golf ball
+        function createGolfBall() {
+            const ballGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+            const ballMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xffffff,
+                shininess: 100
+            });
+            golfBall = new THREE.Mesh(ballGeometry, ballMaterial);
+            golfBall.position.set(0, 0.1, 0);
+            golfBall.castShadow = true;
+            scene.add(golfBall);
+            
+            ballVelocity = new THREE.Vector3(0, 0, 0);
+            ballSpin = new THREE.Vector3(0, 0, 0);
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Update ball physics
+            if (ballVelocity.length() > 0.1) {
+                updateBallPhysics();
+            }
+            
+            // Update camera to follow ball
+            const cameraTarget = new THREE.Vector3(
+                golfBall.position.x * 0.5,
+                golfBall.position.y + 2,
+                golfBall.position.z + 8
+            );
+            camera.position.lerp(cameraTarget, 0.05);
+            camera.lookAt(golfBall.position);
+            
+            // Update mini map
+            updateMiniMap();
+            
+            renderer.render(scene, camera);
+        }
+
+        // Ball physics
+        function updateBallPhysics() {
+            const dt = 0.016;
+            
+            // Gravity
+            ballVelocity.y -= 9.81 * dt;
+            
+            // Air resistance
+            ballVelocity.multiplyScalar(0.995);
+            
+            // Magnus effect (spin)
+            const magnus = ballSpin.clone().cross(ballVelocity).multiplyScalar(0.00001);
+            ballVelocity.add(magnus);
+            
+            // Update position
+            golfBall.position.add(ballVelocity.clone().multiplyScalar(dt));
+            
+            // Ground collision
+            if (golfBall.position.y <= 0.1) {
+                golfBall.position.y = 0.1;
+                
+                if (ballVelocity.length() < 0.5) {
+                    ballVelocity.set(0, 0, 0);
+                    ballSpin.set(0, 0, 0);
+                    onShotComplete();
+                } else {
+                    ballVelocity.y = Math.abs(ballVelocity.y) * 0.6;
+                    ballVelocity.multiplyScalar(0.7);
+                    ballSpin.multiplyScalar(0.8);
+                }
             }
         }
 
-        // Club selection
+        // Initialize motion sensors
+        function initMotionSensors() {
+            // Request permission for iOS 13+
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                document.getElementById('permissionModal').style.display = 'flex';
+            } else {
+                setupMotionListeners();
+            }
+        }
+
+        // Request permissions
+        function requestPermissions() {
+            DeviceMotionEvent.requestPermission()
+                .then(response => {
+                    if (response == 'granted') {
+                        setupMotionListeners();
+                        document.getElementById('permissionModal').style.display = 'none';
+                    }
+                })
+                .catch(console.error);
+            
+            DeviceOrientationEvent.requestPermission()
+                .then(response => {
+                    if (response == 'granted') {
+                        setupOrientationListeners();
+                    }
+                })
+                .catch(console.error);
+        }
+
+        // Setup motion listeners
+        function setupMotionListeners() {
+            window.addEventListener('devicemotion', handleMotion);
+            window.addEventListener('deviceorientation', handleOrientation);
+        }
+
+        function setupOrientationListeners() {
+            window.addEventListener('deviceorientation', handleOrientation);
+        }
+
+        // Handle device motion
+        function handleMotion(event) {
+            if (event.acceleration) {
+                motionData.acceleration = {
+                    x: event.acceleration.x || 0,
+                    y: event.acceleration.y || 0,
+                    z: event.acceleration.z || 0
+                };
+                
+                const totalAccel = Math.sqrt(
+                    Math.pow(motionData.acceleration.x, 2) +
+                    Math.pow(motionData.acceleration.y, 2) +
+                    Math.pow(motionData.acceleration.z, 2)
+                );
+                
+                if (totalAccel > motionData.maxAcceleration) {
+                    motionData.maxAcceleration = totalAccel;
+                }
+            }
+        }
+
+        // Handle device orientation
+        function handleOrientation(event) {
+            motionData.rotation = {
+                alpha: event.alpha || 0,
+                beta: event.beta || 0,
+                gamma: event.gamma || 0
+            };
+            
+            // Update aim guide based on device tilt
+            const aimGuide = document.getElementById('aimGuide');
+            if (aimGuide) {
+                const tilt = motionData.rotation.gamma;
+                aimGuide.style.transform = `translateX(-50%) rotate(${tilt * 0.5}deg)`;
+            }
+        }
+
+        // Handle swing
+        function handleSwing() {
+            const button = document.getElementById('swingButton');
+            
+            if (button.classList.contains('ready')) {
+                // Execute shot
+                executeShot();
+                button.classList.remove('ready');
+            } else {
+                // Start tracking
+                startSwingTracking();
+                button.classList.add('ready');
+            }
+        }
+
+        // Start swing tracking
+        function startSwingTracking() {
+            motionData.maxAcceleration = 0;
+            document.getElementById('motionIndicator').style.display = 'block';
+            document.getElementById('powerMeter').style.display = 'block';
+            
+            // Simulate power buildup
+            let power = 0;
+            const powerInterval = setInterval(() => {
+                power = Math.min(power + 5, 100);
+                document.getElementById('powerFill').style.width = power + '%';
+                
+                if (power >= 100) {
+                    clearInterval(powerInterval);
+                }
+            }, 50);
+            
+            // Auto-execute after 3 seconds
+            setTimeout(() => {
+                clearInterval(powerInterval);
+                executeShot();
+            }, 3000);
+        }
+
+        // Execute shot
+        function executeShot() {
+            document.getElementById('motionIndicator').style.display = 'none';
+            document.getElementById('powerMeter').style.display = 'none';
+            
+            const club = clubs[currentClub];
+            
+            // Calculate shot based on motion data or simulate
+            const swingPower = Math.min(motionData.maxAcceleration / 20, 1) || 0.85 + Math.random() * 0.15;
+            const accuracy = 0.9 + Math.random() * 0.1;
+            
+            // Shot calculations
+            const distance = club.distance * swingPower * accuracy;
+            const ballSpeed = club.ballSpeed * swingPower;
+            const launchAngle = club.launch + (Math.random() - 0.5) * 3;
+            const spinRate = club.spin + (Math.random() - 0.5) * 500;
+            
+            // Update shot data display
+            document.getElementById('shotData').style.display = 'block';
+            document.getElementById('carryDistance').textContent = Math.round(distance) + ' yds';
+            document.getElementById('ballSpeed').textContent = Math.round(ballSpeed) + ' mph';
+            document.getElementById('launchAngle').textContent = launchAngle.toFixed(1) + '°';
+            document.getElementById('spinRate').textContent = Math.round(spinRate) + ' rpm';
+            
+            // Set ball velocity
+            const speed = ballSpeed * 0.44704; // mph to m/s
+            const launchRad = launchAngle * Math.PI / 180;
+            const direction = (Math.random() - 0.5) * 0.1; // Slight left/right
+            
+            ballVelocity.set(
+                direction * speed,
+                Math.sin(launchRad) * speed,
+                -Math.cos(launchRad) * speed
+            );
+            
+            ballSpin.set(0, spinRate / 100, 0);
+            
+            // Reset motion data
+            motionData.maxAcceleration = 0;
+            
+            // Increment stroke count
+            strokeCount++;
+            document.getElementById('strokeCount').textContent = strokeCount;
+            document.getElementById('scoreCard').style.display = 'block';
+        }
+
+        // On shot complete
+        function onShotComplete() {
+            const distance = Math.abs(golfBall.position.z) * 1.094; // Convert to yards
+            distanceToPin = Math.max(0, holeDistance - distance);
+            
+            document.getElementById('distanceToPin').textContent = Math.round(distanceToPin);
+            
+            // Show result
+            let title = 'NICE SHOT!';
+            let details = '';
+            
+            if (distance > 250) {
+                title = 'CRUSHED IT!';
+                details = 'Monster drive!';
+            } else if (distance > 200) {
+                title = 'GREAT SHOT!';
+                details = 'Excellent distance';
+            } else if (distance > 150) {
+                title = 'GOOD SHOT';
+                details = 'Solid contact';
+            }
+            
+            if (distanceToPin < 10) {
+                details = 'On the green!';
+            } else if (distanceToPin < 50) {
+                details = 'Great approach position';
+            }
+            
+            document.getElementById('resultDistance').textContent = Math.round(distance);
+            document.getElementById('resultDetails').textContent = details;
+            document.querySelector('.result-title').textContent = title;
+            document.getElementById('shotResult').style.display = 'block';
+            
+            // Hide shot data after delay
+            setTimeout(() => {
+                document.getElementById('shotData').style.display = 'none';
+            }, 5000);
+        }
+
+        // Close result
+        function closeResult() {
+            document.getElementById('shotResult').style.display = 'none';
+            document.getElementById('swingButton').classList.remove('ready');
+        }
+
+        // Select club
         function selectClub(club) {
-            console.log('Selecting club:', club);
-            appState.selectedClub = club;
+            currentClub = club;
             
-            // Update button states
+            // Update UI
             document.querySelectorAll('.club-btn').forEach(btn => {
                 btn.classList.remove('selected');
             });
-            event.target.classList.add('selected');
-            
-            // Update displays
-            document.getElementById('targetDistance').textContent = clubData[club].distance + ' yds';
-            document.getElementById('selectedClub').textContent = club;
-            document.getElementById('clubStatsTitle').textContent = club;
-            
-            updateClubStats();
+            event.target.closest('.club-btn').classList.add('selected');
         }
 
-        function updateClubStats() {
-            const club = appState.selectedClub;
-            const stats = appState.clubStats[club] || { shots: [], best: 0 };
+        // Update mini map
+        function updateMiniMap() {
+            const canvas = document.getElementById('miniMapCanvas');
+            if (!canvas) return;
             
-            const avgDistance = stats.shots.length > 0 ? 
-                Math.round(stats.shots.reduce((a, b) => a + b, 0) / stats.shots.length) : 0;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width = canvas.offsetWidth;
+            const height = canvas.height = canvas.offsetHeight;
             
-            document.getElementById('avgDistance').textContent = avgDistance + ' yds';
-            document.getElementById('bestShot').textContent = stats.best + ' yds';
-            document.getElementById('shotsHit').textContent = stats.shots.length;
+            // Clear
+            ctx.fillStyle = '#1a3d1a';
+            ctx.fillRect(0, 0, width, height);
             
-            // Calculate accuracy
-            const target = clubData[club].distance;
-            const accurateShots = stats.shots.filter(shot => Math.abs(shot - target) <= 10).length;
-            const accuracy = stats.shots.length > 0 ? Math.round((accurateShots / stats.shots.length) * 100) : 0;
-            document.getElementById('clubAccuracy').textContent = accuracy + '%';
+            // Draw fairway
+            ctx.fillStyle = '#4a7c4a';
+            ctx.fillRect(width * 0.3, 0, width * 0.4, height);
+            
+            // Draw green
+            ctx.fillStyle = '#7ec850';
+            ctx.beginPath();
+            ctx.arc(width / 2, height * 0.1, 10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw ball position
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            const ballY = height - (Math.abs(golfBall.position.z) / 400 * height);
+            ctx.arc(width / 2, ballY, 3, 0, Math.PI * 2);
+            ctx.fill();
         }
 
-        // Course functions
-        function selectCourse(courseId) {
-            console.log('Selecting course:', courseId);
-            appState.selectedCourse = courseId;
-            
-            document.querySelectorAll('.course-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            event.target.classList.add('selected');
-            
-            document.getElementById('courseHoleDisplay').style.display = 'block';
-            updateCourseHoleDisplay();
+        // Start game
+        function startGame() {
+            document.getElementById('cameraSetup').style.display = 'none';
+            initScene();
+            initMotionSensors();
         }
 
-        function updateCourseHoleDisplay() {
-            const course = courses[appState.selectedCourse];
-            const hole = course.holes[appState.currentHole - 1];
-            
-            document.getElementById('courseHoleNumber').textContent = appState.currentHole;
-            document.getElementById('courseHoleName').textContent = hole.name;
-            document.getElementById('courseHoleDistance').textContent = hole.distance;
-            document.getElementById('courseHolePar').textContent = hole.par;
-        }
-
-        function nextCourseHole() {
-            if (appState.currentHole < courses[appState.selectedCourse].holes.length) {
-                appState.currentHole++;
-                updateCourseHoleDisplay();
+        // Check orientation
+        function checkOrientation() {
+            if (window.innerWidth < window.innerHeight) {
+                document.getElementById('rotateDevice').style.display = 'flex';
             } else {
-                alert('Round Complete!');
-                appState.currentHole = 1;
-                appState.courseStrokes = Array(18).fill(0);
-                updateCourseHoleDisplay();
+                document.getElementById('rotateDevice').style.display = 'none';
             }
         }
 
-        function viewScorecard() {
-            const course = courses[appState.selectedCourse];
-            let scoreText = `${course.name} Scorecard:\n\n`;
-            
-            for (let i = 0; i < Math.min(appState.currentHole, course.holes.length); i++) {
-                const hole = course.holes[i];
-                const strokes = appState.courseStrokes[i] || 0;
-                scoreText += `Hole ${i + 1}: Par ${hole.par}, Strokes: ${strokes}\n`;
-            }
-            
-            alert(scoreText);
-        }
+        // Event listeners
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            checkOrientation();
+        });
 
-        // Camera functions
-        async function startCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment' }
-                });
-                
-                document.getElementById('videoStream').srcObject = stream;
-                document.getElementById('cameraPlaceholder').style.display = 'none';
-                document.getElementById('startCamera').classList.add('active');
-                document.getElementById('trackingBtn').disabled = false;
-                document.getElementById('captureBtn').disabled = false;
-                updateStatus('Camera active', true);
-                
-                appState.camera = stream;
-            } catch (error) {
-                alert('Camera access failed. Please allow camera permissions.');
-                updateStatus('Camera failed', false);
-            }
-        }
+        window.addEventListener('orientationchange', checkOrientation);
 
-        function toggleTracking() {
-            appState.isTracking = !appState.isTracking;
-            const btn = document.getElementById('trackingBtn');
-            
-            if (appState.isTracking) {
-                btn.textContent = 'Stop Tracking';
-                btn.classList.add('active');
-                updateStatus('Tracking active', true);
-            } else {
-                btn.textContent = 'Start Tracking';
-                btn.classList.remove('active');
-                updateStatus('Camera active', true);
-            }
-        }
-
-        function captureShot() {
-            takeShot();
-        }
-
-        function takeRangeShot() {
-            takeShot();
-        }
-
-        function takeCourseShot() {
-            takeShot();
-        }
-
-        function takeShot() {
-            // Simulate shot data
-            const club = appState.selectedClub;
-            const baseDistance = clubData[club].distance;
-            const actualDistance = Math.round(baseDistance + (Math.random() - 0.5) * 40);
-            const ballSpeed = Math.round(actualDistance * 0.6 + Math.random() * 20);
-            const launchAngle = Math.round(8 + Math.random() * 16);
-            const spinRate = Math.round(2000 + Math.random() * 2000);
-            
-            const shotData = {
-                distance: actualDistance,
-                speed: ballSpeed,
-                angle: launchAngle,
-                spin: spinRate,
-                club: club
-            };
-            
-            // Show ball flight animation first (for course mode)
-            if (appState.currentMode === 'course') {
-                animateBallFlight(shotData);
-                
-                // Show shot analysis after flight animation
-                setTimeout(() => {
-                    showShotAnalysis(shotData);
-                    updateCourseProgress(actualDistance);
-                }, 4000); // After 4 seconds (flight + landing)
-            } else {
-                // For practice/range modes, show analysis immediately
-                showShotAnalysis(shotData);
-                
-                if (appState.currentMode === 'range') {
-                    updateRangeStats(actualDistance);
-                }
-            }
-        }
-
-        function showShotAnalysis(shotData) {
-            // Update shot analysis display
-            document.getElementById('ballSpeedResult').textContent = shotData.speed + ' mph';
-            document.getElementById('distanceResult').textContent = shotData.distance + ' yds';
-            document.getElementById('launchAngleResult').textContent = shotData.angle + '°';
-            document.getElementById('spinRateResult').textContent = shotData.spin + ' rpm';
-            
-            // Show analysis
-            document.getElementById('shotAnalysis').style.display = 'block';
-            
-            // Add to history
-            const shot = {
-                time: new Date().toLocaleTimeString(),
-                club: shotData.club,
-                distance: shotData.distance,
-                speed: shotData.speed
-            };
-            appState.shotHistory.unshift(shot);
-            appState.shotHistory = appState.shotHistory.slice(0, 5);
-            updateShotHistory();
-        }
-
-        function showPuttingInterface() {
-            const course = courses[appState.selectedCourse];
-            const hole = course.holes[appState.currentHole - 1];
-            
-            // Calculate distance to pin (3-25 feet based on approach accuracy)
-            const pinDistance = Math.round(3 + Math.random() * 22);
-            
-            // Random slope difficulty
-            const slopeDifficulty = Math.floor(Math.random() * 3) + 1;
-            
-            // Update interface
-            document.getElementById('pinDistance').textContent = pinDistance + ' feet';
-            
-            // Update slope indicators
-            document.querySelectorAll('[id^="slope"]').forEach(dot => {
-                dot.style.background = 'rgba(255,255,255,0.3)';
-            });
-            document.getElementById(`slope${slopeDifficulty}`).style.background = '#FF6B6B';
-            
-            const descriptions = {
-                1: "Straight putt, minimal break",
-                2: "Moderate break, manageable slope",
-                3: "Severe break, tricky read required"
-            };
-            document.getElementById('slopeDescription').textContent = descriptions[slopeDifficulty];
-            
-            // Show interface
-            document.getElementById('puttingInterface').style.display = 'flex';
-        }
-
-        function updateRangeStats(distance) {
-            const club = appState.selectedClub;
-            const stats = appState.clubStats[club];
-            
-            stats.shots.push(distance);
-            if (distance > stats.best) {
-                stats.best = distance;
-            }
-            
-            // Update accuracy feedback
-            const target = clubData[club].distance;
-            const diff = Math.abs(distance - target);
-            let feedback = '';
-            
-            if (diff <= 5) feedback = '🎯 Perfect! Right on target';
-            else if (diff <= 10) feedback = '✅ Great shot! Very close';
-            else if (diff <= 20) feedback = '👍 Good shot! Close to target';
-            else feedback = '⚠️ Keep practicing - ' + (distance > target ? 'too long' : 'too short');
-            
-            document.getElementById('accuracyFeedback').textContent = feedback;
-            updateClubStats();
-        }
-
-        // Immersive environment functions
-        function enterRangeEnvironment() {
-            updateRangeHUD();
-            document.getElementById('rangeEnvironment').classList.add('show');
-        }
-
-        function enterCourseEnvironment() {
-            updateCourseHUD();
-            setupCourseHole();
-            document.getElementById('courseEnvironment').classList.add('show');
-        }
-
-        function updateRangeHUD() {
-            document.getElementById('rangeClubDisplay').textContent = appState.selectedClub;
-            document.getElementById('rangeTargetDisplay').textContent = clubData[appState.selectedClub].distance;
-        }
-
-        function updateCourseHUD() {
-            const course = courses[appState.selectedCourse];
-            const hole = course.holes[appState.currentHole - 1];
-            
-            document.getElementById('courseHoleTitle').textContent = 
-                `${course.name} Hole ${appState.currentHole} - ${hole.name}`;
-            document.getElementById('courseHoleDesc').textContent = hole.description;
-            document.getElementById('courseParHUD').textContent = hole.par;
-            document.getElementById('courseDistanceHUD').textContent = hole.distance;
-            document.getElementById('courseStrokesHUD').textContent = 
-                appState.courseStrokes[appState.currentHole - 1] + 1;
-            
-            // Update score
-            const totalStrokes = appState.courseStrokes.reduce((a, b) => a + b, 0);
-            const playedHoles = appState.currentHole - 1 + (appState.courseStrokes[appState.currentHole - 1] > 0 ? 0 : 0);
-            const totalPar = course.holes.slice(0, playedHoles).reduce((sum, h) => sum + h.par, 0);
-            const scoreDiff = totalStrokes - totalPar;
-            
-            let scoreText = 'E';
-            if (scoreDiff > 0) scoreText = '+' + scoreDiff;
-            else if (scoreDiff < 0) scoreText = '' + scoreDiff;
-            
-            document.getElementById('courseScoreHUD').textContent = scoreText;
-        }
-
-        function setupCourseHole() {
-            const course = courses[appState.selectedCourse];
-            const hole = course.holes[appState.currentHole - 1];
-            
-            // Show/hide water hazards based on hole
-            const waterHazard = document.getElementById('waterHazard');
-            if (hole.name.includes('Water') || hole.name === 'Golden Bell' || appState.currentHole === 12) {
-                waterHazard.style.display = 'block';
-            } else {
-                waterHazard.style.display = 'none';
-            }
-        }
-
-        function takeRangeShot() {
-            if (!document.getElementById('rangeEnvironment').classList.contains('show')) {
-                enterRangeEnvironment();
-                return;
-            }
-
-            // Generate shot data
-            const shotData = generateShotData();
-            
-            // Update HUD with live data
-            document.getElementById('rangeSpeedHUD').textContent = shotData.speed + ' mph';
-            document.getElementById('rangeDistanceHUD').textContent = shotData.distance + ' yds';
-            document.getElementById('rangeAngleHUD').textContent = shotData.angle + '°';
-            document.getElementById('rangeSpinHUD').textContent = shotData.spin + ' rpm';
-            
-            // Animate ball flight to range targets
-            animateRangeBallFlight(shotData);
-            
-            // Update range stats
-            updateRangeStats(shotData.distance);
-        }
-
-        function takeCourseShot() {
-            if (!document.getElementById('courseEnvironment').classList.contains('show')) {
-                enterCourseEnvironment();
-                return;
-            }
-
-            // Generate shot data
-            const shotData = generateShotData();
-            
-            // Update HUD
-            document.getElementById('courseSpeedHUD').textContent = shotData.speed + ' mph';
-            document.getElementById('courseDistanceHUD2').textContent = shotData.distance + ' yds';
-            
-            // Animate ball flight across Augusta hole
-            animateCourseBallFlight(shotData);
-            
-            // Update course progress
-            setTimeout(() => {
-                updateCourseProgress(shotData.distance);
-            }, 4000);
-        }
-
-        function generateShotData() {
-            const club = appState.selectedClub;
-            const baseDistance = clubData[club].distance;
-            const actualDistance = Math.round(baseDistance + (Math.random() - 0.5) * 40);
-            const ballSpeed = Math.round(actualDistance * 0.6 + Math.random() * 20);
-            const launchAngle = Math.round(8 + Math.random() * 16);
-            const spinRate = Math.round(2000 + Math.random() * 2000);
-            
-            return {
-                distance: actualDistance,
-                speed: ballSpeed,
-                angle: launchAngle,
-                spin: spinRate,
-                club: club
-            };
-        }
-
-        function animateRangeBallFlight(shotData) {
-            const ball = document.getElementById('rangeFlyingBall');
-            const shadow = document.getElementById('rangeBallShadow');
-            
-            // Starting position (range tee)
-            const startX = window.innerWidth * 0.1;
-            const startY = window.innerHeight * 0.9;
-            
-            // Ending position based on distance
-            const progress = Math.min(shotData.distance / 300, 1);
-            const endX = startX + (window.innerWidth * 0.8) * progress;
-            const endY = window.innerHeight * 0.5;
-            
-            // Peak height
-            const peakHeight = shotData.angle * 8;
-            
-            animateBallTrajectory(ball, shadow, startX, startY, endX, endY, peakHeight, 3000);
-        }
-
-        function animateCourseBallFlight(shotData) {
-            const ball = document.getElementById('courseFlyingBall');
-            const shadow = document.getElementById('courseBallShadow');
-            const trajectory = document.getElementById('courseTrajectoryLine');
-            
-            // Starting position (tee box)
-            const startX = window.innerWidth * 0.1;
-            const startY = window.innerHeight * 0.85;
-            
-            // Ending position based on hole distance
-            const hole = courses[appState.selectedCourse].holes[appState.currentHole - 1];
-            const progress = Math.min(shotData.distance / hole.distance, 1);
-            const endX = startX + (window.innerWidth * 0.7) * progress;
-            const endY = window.innerHeight * 0.4;
-            
-            // Peak height
-            const peakHeight = shotData.angle * 10;
-            
-            // Show trajectory line
-            trajectory.style.opacity = '0.6';
-            trajectory.style.left = startX + 'px';
-            trajectory.style.top = (startY - peakHeight/2) + 'px';
-            trajectory.style.width = (endX - startX) + 'px';
-            trajectory.style.transform = `rotate(${-shotData.angle/3}deg)`;
-            
-            animateBallTrajectory(ball, shadow, startX, startY, endX, endY, peakHeight, 4000);
-        }
-
-        function animateBallTrajectory(ball, shadow, startX, startY, endX, endY, peakHeight, duration) {
-            let animationStart = performance.now();
-
-            function animateFrame(currentTime) {
-                const elapsed = currentTime - animationStart;
-                const progress = Math.min(elapsed / duration, 1);
-
-                if (progress < 1) {
-                    // Parabolic trajectory
-                    const x = startX + (endX - startX) * progress;
-                    const heightFactor = Math.sin(progress * Math.PI);
-                    const y = startY - (endY - startY) * progress - (heightFactor * peakHeight);
-                    
-                    // Update ball position
-                    ball.style.left = x + 'px';
-                    ball.style.top = y + 'px';
-                    ball.style.display = 'block';
-                    
-                    // Update shadow
-                    const shadowSize = 6 + (heightFactor * 6);
-                    shadow.style.left = x + 'px';
-                    shadow.style.top = (startY + 5) + 'px';
-                    shadow.style.width = shadowSize + 'px';
-                    shadow.style.height = shadowSize + 'px';
-                    shadow.style.opacity = 0.3 + (heightFactor * 0.3);
-                    shadow.style.display = 'block';
-                    
-                    requestAnimationFrame(animateFrame);
-                } else {
-                    // Landing
-                    ball.style.left = endX + 'px';
-                    ball.style.top = endY + 'px';
-                    
-                    // Landing effect
-                    showLandingEffect(endX, endY);
-                    
-                    // Hide ball after landing
-                    setTimeout(() => {
-                        ball.style.display = 'none';
-                        shadow.style.display = 'none';
-                    }, 1000);
-                }
-            }
-
-            requestAnimationFrame(animateFrame);
-        }
-
-        function changeRangeClub() {
-            const clubs = Object.keys(clubData);
-            const currentIndex = clubs.indexOf(appState.selectedClub);
-            const nextIndex = (currentIndex + 1) % clubs.length;
-            appState.selectedClub = clubs[nextIndex];
-            updateRangeHUD();
-            
-            // Also update driving range mode display
-            updateClubStats();
-        }
-
-        function changeCourseClub() {
-            const clubs = Object.keys(clubData);
-            const currentIndex = clubs.indexOf(appState.selectedClub);
-            const nextIndex = (currentIndex + 1) % clubs.length;
-            appState.selectedClub = clubs[nextIndex];
-            updateCourseHUD();
-        }
-
-        function closeRangeEnvironment() {
-            document.getElementById('rangeEnvironment').classList.remove('show');
-        }
-
-        function closeCourseEnvironment() {
-            document.getElementById('courseEnvironment').classList.remove('show');
-        }
-
-        function selectPuttResult(putts) {
-            // Add putts to score
-            appState.courseStrokes[appState.currentHole - 1] += putts;
-            
-            const totalStrokes = appState.courseStrokes[appState.currentHole - 1];
-            const hole = courses[appState.selectedCourse].holes[appState.currentHole - 1];
-            const scoreToPar = totalStrokes - hole.par;
-            
-            let scoreText = `${totalStrokes} strokes`;
-            if (scoreToPar === -2) scoreText += " - Eagle! 🦅";
-            else if (scoreToPar === -1) scoreText += " - Birdie! 🐦";
-            else if (scoreToPar === 0) scoreText += " - Par ✅";
-            else if (scoreToPar === 1) scoreText += " - Bogey ⚠️";
-            else if (scoreToPar >= 2) scoreText += " - Double+ 😬";
-            
-            alert(`Hole ${appState.currentHole} Complete!\n${putts} putt${putts > 1 ? 's' : ''}\nTotal: ${scoreText}`);
-            
-            // Hide interface
-            document.getElementById('puttingInterface').style.display = 'none';
-        }
-
-        function closeAnalysis() {
-            document.getElementById('shotAnalysis').style.display = 'none';
-        }
-
-        function updateStatus(text, active) {
-            document.getElementById('statusText').textContent = text;
-            document.getElementById('statusDot').classList.toggle('active', active);
-        }
-
-        function updateShotHistory() {
-            const container = document.getElementById('shotHistoryList');
-            if (appState.shotHistory.length === 0) {
-                container.innerHTML = '<div style="text-align: center; opacity: 0.6; padding: 20px;">No shots recorded yet</div>';
-            } else {
-                container.innerHTML = appState.shotHistory.map(shot => 
-                    `<div class="shot-entry"><span>${shot.time}</span><span>${shot.club}: ${shot.distance}yds</span></div>`
-                ).join('');
-            }
-        }
-
-        // Initialize when page loads
-        window.addEventListener('load', initializeApp);
+        // Initialize
+        window.addEventListener('load', () => {
+            checkOrientation();
+        });
     </script>
 </body>
 </html>
